@@ -1,0 +1,260 @@
+/**
+
+ * 
+ */
+ 
+console.log("고객조회 페이지 스크립트");
+
+//날짜세팅
+window.onload = function() {
+	//오늘날짜 설정
+	//한국시간을 맞추기 위한 -32400000
+	const offset = new Date().getTimezoneOffset() * 60000;
+	//현재 날짜 시간 - 9시간(UTC시간을 기준이 우리나라보다 9시간 많음.)
+	const today = new Date(Date.now() - offset);
+
+	const maxDay = new Date(Date.now() - offset).toISOString().substring(0,10);
+	document.getElementById('custDateBox').value = new Date(Date.now()- offset).toISOString().substring(0, 10);
+	document.getElementById("custDateBox").setAttribute("max", maxDay);
+};	
+$(document).ready(
+	$(opener).one('beforeunload', function() {             // 부모창의 새로고침/닫기/앞으로/뒤로
+		window.close();                                    // 팝업을 닫는다
+	})
+);
+
+// 	2022-09-15
+	var dateControl = document.querySelector('input[type="date"]');
+
+      //휴대폰번호 중복, 중복확인했는지
+      var phoneCheck2 = false;
+      var phoneCheck3 = false;
+      
+      $('#phone2').on('change paste keyup', function(){
+    	  phoneCheck2 = false; 
+      });
+      
+      $('#phone3').on('change paste keyup', function(){
+    	  phoneCheck3 = false; 
+      });
+       
+      
+	//핸드폰 중복체크
+	function phoneCheck() {
+		var phone1 = $("#phone1").val();
+		var phone2 = $("#phone2").val();
+		var phone3 = $("#phone3").val();
+		var phoneNum = phone1 + phone2 + phone3
+
+		console.log(phoneNum);
+
+		//휴대폰번호 길이 유효성 체크
+		if (phone1.trim() == '' || phone1.trim().length != 3) {
+			alert('휴대폰 번호를 확인해주세요.');
+			$("#phone1").focus();
+		}else if (phone2.trim() == ''|| phone2.trim().length < 3) {
+			alert('휴대폰 번호를 확인해주세요.');
+			$("#phone2").focus();
+		} else if (phone3.trim() == '' || phone3.trim().length != 4) {
+			alert('휴대폰 번호를 확인해주세요.');
+			$("#phone3").focus();
+		} else if(phone2.trim() == '000' || phone2.trim() == '0000'){
+			alert('유효하지 않은 번호입니다.');
+			return false;
+		} else if(phone3.trim() == '000' || phone3.trim() == '0000'){
+			alert('유효하지 않은 번호입니다.');
+			phone3.focus();
+			return false;
+		} else {
+			console.log('2');
+			$.ajax({
+				url : 'phoneNum.me',
+				type : "post",
+				data : {"phoneNum" : phoneNum},
+				success : function(data) {
+					console.log(data);
+					if (data == '1') {
+						alert('사용 중인 핸드폰 번호입니다.');
+						phoneCheck2 = false;
+						phoneCheck3 = false;
+						console.log('3');
+					} else {
+						alert('사용 가능한 핸드폰 번호입니다.');
+						phoneCheck2 = true;
+						phoneCheck3 = true;
+						console.log('4');
+					}
+				},
+				error : function(data) {
+					console.log(data);
+				}
+			});
+		};
+	};
+
+	//주소 1칸 입력시 2칸도 입력필수
+	function Address() {
+		var firstAddress = $("#firstAddress").val();
+		var TwoAddress = $("#TwoAddress").val();
+		console.log(firstAddress);
+		console.log(TwoAddress);
+		if (firstAddress.trim() !== '' && TwoAddress.trim() == '') {
+			var area = document.getElementById('addressSpan');
+				area.style.color = 'red';
+				area.innerHTML = "상세주소도 입력해주세요."
+		} else if (firstAddress.trim() == '' && TwoAddress.trim() !== '') {
+			var area = document.getElementById('addressSpan');
+				area.style.color = 'red';
+				area.innerHTML = "시/구/동 주소도 입력해주세요."
+
+		} else if (firstAddress.trim() == '' && TwoAddress.trim() == '') {
+			var area = document.getElementById('addressSpan');
+				area.innerHTML = "";
+		} else if (firstAddress.trim() !== '' && TwoAddress.trim() !== '') {
+			var area = document.getElementById('addressSpan');
+				area.innerHTML = "";
+				return true;
+		}
+	}
+
+	//주소 1칸 입력시 2칸도 입력필수
+	function DetailAddress() {
+
+		var firstAddress = $("#firstAddress").val();
+		var TwoAddress = $("#TwoAddress").val();
+
+		if (firstAddress.trim() !== '' && TwoAddress.trim() == '') {
+			var area = document.getElementById('addressSpan');
+			area.style.color = 'red';
+			area.innerHTML = "상세주소도 입력해주세요."
+			return false;
+		} else if (firstAddress.trim() == '' && TwoAddress.trim() !== '') {
+			var area = document.getElementById('addressSpan');
+				area.style.color = 'red';
+				area.innerHTML = "시/구/동 주소도 입력해주세요."
+				return false;
+		} else if (firstAddress.trim() == '' && TwoAddress.trim() == '') {
+			var area = document.getElementById('addressSpan');
+				area.innerHTML = "";
+				return false;
+		} else if (firstAddress.trim() !== '' && TwoAddress.trim() !== '') {
+			var area = document.getElementById('addressSpan');
+				area.innerHTML = "";
+				return true;
+		}
+	}
+	
+	//닫기 버튼 클릭시 
+	function unPass() {
+		window.close(); 
+	};
+	
+	//등록버튼 클릭시
+	function pass() {
+		debugger;
+		var custNameId = document.getElementById('custNameId').value;					//고객명
+		var jobCode = document.getElementById('jobCode').value;							//직업코드
+		var custEmailId = document.getElementById('custEmailId').value;					//이메일아이디
+		var custEmailIdDetails = document.getElementById('custEmailIdDetails').value;	//이메일주소
+		var email = custEmailId+'@'+custEmailIdDetails;
+		var phone2 = $("#phone2").val();												//핸드폰번호2
+		var phone3 = $("#phone3").val();												//핸드폰번호3
+		
+		var result = false;
+		
+		//한칸이라도 비어있으면 XXX를 입력해주세요.
+		if(custNameId == "" || custNameId.trim().length == 0){
+			alert('고객명을 입력해주세요');
+	 		$('#custNameId').focus();
+			return false;
+		} else if(custNameId.trim().length < 2){
+			alert('고객명을 2글자 이상 입력하시오.');
+			$('#custNameId').focus();
+			return false;
+		} else if(phone2 == "" || phone2.trim().length == 0){
+			alert('핸드폰번호를 입력해주세요');
+			return false;
+		} else if(phone3 == "" || phone3.trim().length == 0){
+			alert('핸드폰번호를 입력해주세요');
+			return false;
+		} else if(phone2.trim() == '000' || phone2.trim() == '0000'){
+			alert('유효하지 않은 번호입니다.');
+			return false;
+		} else if(phone3.trim() == '000' || phone3.trim() == '0000'){
+			alert('유효하지 않은 번호입니다.');
+			return false;
+		} else if(jobCode == "" || jobCode.length == 0){
+			alert('직업코드를 입력해주세요');
+			return false;
+		} else if(custEmailId == "" || custEmailId.length == 0){
+			alert('이메일를 입력해주세요');
+			return false;
+		} else if(custEmailIdDetails == "" || custEmailIdDetails.length == 0){
+			alert('이메일주소를 입력해주세요');
+			return false;
+		} else if (phone2.trim() == '') {
+			alert('번호를 입력하세요.');
+		} else if (phone3.trim() == '') {
+			alert('번호를 입력하세요.');
+		} else if(phoneCheck2 && phoneCheck3){//ajax 핸드폰번호 중복확인요청
+			console.log('1');
+		} else {
+			alert('휴대폰번호 중복확인을 해주세요');
+	        return false;
+		}
+		
+		//등록버튼 안에 등록버튼 누를 시
+		if(confirm("신규고객으로 등록하시겠습니까?")){
+			saveNewCust();
+		}
+	};
+	
+	function saveNewCust() {
+		//확인을 누를시
+		debugger;
+		//휴대폰번호 연결
+		var phone1 = $("#phone1").val();
+		var phone2 = $("#phone2").val();
+		var phone3 = $("#phone3").val();
+		var mblNo = phone1 + phone2 + phone3
+		document.getElementById('phoneNumble').value = mblNo;
+		
+		//생년월일 하이픈 제거
+		var custBirthdayBox = $('#custDateBox').val();
+		var brdyDt = custBirthdayBox.replace(/\-/g,'');
+		document.getElementById("birthday").value = brdyDt;
+		//결혼기념일 하이픈 제거
+		var custMarryBox2 = $('#custMarryBox').val();
+		var mrrgDt = custMarryBox2.replace(/\-/g,'');
+		document.getElementById("custMarryBox2").value = mrrgDt;
+		//이메일 @붙히기
+		var custEmailId = document.getElementById('custEmailId').value;					//이메일아이디
+		var custEmailIdDetails = document.getElementById('custEmailIdDetails').value;	//이메일주소
+		var email = custEmailId+'@'+custEmailIdDetails;
+
+		//이메일
+		document.getElementById("email1").value = email;
+
+		//작성내용 등록
+		var joinForm = $("form[name=joinForm]").serialize();
+		console.log('joinForm : ' + joinForm);
+		
+		$.ajax({
+			url : 'joinForm.me',
+			type : 'post',
+			data : joinForm,
+			dataType: 'json',
+			success: function(data){
+				console.log(data);
+				if (data.join == '1') {
+					window.close();
+				}else{
+					alert("고객정보를 확인해주세요");
+				}
+			},
+			error: function(data) {
+				alert("신규등록정보를 확인해주세요");
+			}
+		});
+		
+	}

@@ -1,0 +1,720 @@
+package com.dowellcommunity.dowellcommunity.member.controller;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.dowellcommunity.dowellcommunity.HomeController;
+import com.dowellcommunity.dowellcommunity.member.model.exception.MemberException;
+import com.dowellcommunity.dowellcommunity.member.model.service.MemberService;
+import com.dowellcommunity.dowellcommunity.member.model.vo.Customer;
+import com.dowellcommunity.dowellcommunity.member.model.vo.Member;
+import com.dowellcommunity.dowellcommunity.member.model.vo.CollectBill;
+
+@Controller
+public class MemberController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(MemberController.class);
+	
+	@Autowired
+	private MemberService mService;
+	
+	//로그인 페이지 이동
+	@RequestMapping("login.me")
+	public String login() {
+		return "login";
+	}
+
+	//로그인
+	@RequestMapping(value="loginOn.me", method=RequestMethod.POST)
+	public void login(@RequestParam("userPwd") String userPwd, @RequestParam("userId") String userId, Member m,
+			   		  Model model, HttpSession session, HttpServletRequest request, HttpServletResponse response) throws IOException{
+		System.out.println("userPwd:"+userPwd);
+		System.out.println("userId:"+userId);
+		Member loginMember = mService.login(m);
+	    System.out.println("loginMember:"+loginMember);
+		if(loginMember != null) {
+			session.setAttribute("loginUser", loginMember);
+		    response.getWriter().print(true);
+		} else {
+			response.getWriter().print(false);
+			  
+		}
+	}
+		  
+	//로그아웃
+	@RequestMapping("logout.me")
+	public String logout(HttpSession session) {
+		session.invalidate();
+		return "redirect:home.do";
+	}
+	
+	//관리자 페이지 이동
+	@RequestMapping("managerPage.me")
+	public ModelAndView managerPage(ModelAndView mv) {
+		System.out.println("mv:"+mv);
+		mv.setViewName("admin");
+		return mv;
+	}
+	
+	//매장조회
+	@RequestMapping(value="SearchButSale.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String searchButSale(@RequestParam Map<String, Object> map) {
+		System.out.println("map:"+map);
+		//매장 검색어 키워드 select.
+		ArrayList<HashMap<String, String>> SaleCheckList = mService.SaleCheck(map);
+			
+		System.out.println("SaleCheckList:"+SaleCheckList);
+		
+		JSONArray jobArr = new JSONArray();//리스트이기 때문에 for문을 통해 제이슨어레이에 담는다.
+		for(HashMap<String, String> checkShop : SaleCheckList) {
+			JSONObject job = new JSONObject(SaleCheckList);
+			job.put("PRT_CD", checkShop.get("PRT_CD"));//PRT_CD : 매장코드
+			job.put("PRT_NM", checkShop.get("PRT_NM"));//PRT_NM : 매장명
+			job.put("PRT_SS_CD", checkShop.get("PRT_SS_CD"));//PRT_SS_CD : 매장상태
+		
+			jobArr.put(job); 
+		}
+		return jobArr.toString();
+	}
+	
+	//매장조회 팝업창 오픈
+	@RequestMapping("salePopup.me")
+	public String salePopup() {
+		return "../common/salePopup";
+	}
+	
+//////////////////////////////////////////////고객조회///////////////////////////////////////
+	
+	//고객번호 조회
+	@RequestMapping(value="custNum.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String custNum(@RequestParam Map<String, Object> map) {
+		System.out.println("고객번호map:"+map);
+		//게시물 리스트
+		ArrayList<HashMap<String, String>> list = mService.custNumList(map);
+		
+		JSONArray jobArr = new JSONArray();//리스트이기 때문에 for문을 통해 제이슨어레이에 담는다.
+		for(HashMap<String, String> checkCust : list) {
+			JSONObject job = new JSONObject(list);
+			job.put("AVB_PNT", checkCust.get("AVB_PNT"));
+			job.put("CUST_NO", checkCust.get("CUST_NO"));
+			job.put("CUST_NM", checkCust.get("CUST_NM"));
+	
+			jobArr.put(job);
+		}
+		return jobArr.toString();
+	}
+	
+	//고객조회 팝업창 오픈
+	@RequestMapping(value="custNumCheck.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String custNumble(@RequestParam Map<String, Object> map) {
+			
+		System.out.println("고객조회map:"+ map);
+		ArrayList<HashMap<String, String>> custNumbleList = mService.custNumble(map);
+		
+		JSONArray jobArr = new JSONArray();//리스트이기 때문에 for문을 통해 제이슨어레이에 담는다.
+		for(HashMap<String, String> checkCust : custNumbleList) {
+			JSONObject job = new JSONObject(custNumbleList);
+			job.put("AVB_PNT", checkCust.get("AVB_PNT"));
+			job.put("CUST_NO", checkCust.get("CUST_NO"));
+			job.put("CUST_NM", checkCust.get("CUST_NM"));
+			job.put("CUST_SS_CD", checkCust.get("CUST_SS_CD"));
+			job.put("MBL_NO", checkCust.get("MBL_NO"));
+	
+			jobArr.put(job);
+		}
+		return jobArr.toString();
+	}
+	
+	//고객조회 팝업창-검색
+	@RequestMapping(value="checkCust.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String checkCust(@RequestParam Map<String, Object> map) {
+		System.out.println(map);
+		ArrayList<HashMap<String, String>> checkCustList = mService.checkCustList(map);
+				
+		System.out.println("checkShopList:"+checkCustList);
+		System.out.println("-------------------------------------");
+		
+		JSONArray jobArr = new JSONArray();//리스트이기 때문에 for문을 통해 제이슨어레이에 담는다.
+		for(HashMap<String, String> checkCust : checkCustList) {
+			JSONObject job = new JSONObject(checkCustList);
+			job.put("AVB_PNT", checkCust.get("AVB_PNT"));
+			job.put("custNo", checkCust.get("CUST_NO"));
+			job.put("custNM", checkCust.get("CUST_NM"));
+			job.put("custSsCd", checkCust.get("CUST_SS_CD"));
+			job.put("mblNo", checkCust.get("MBL_NO"));
+	
+			jobArr.put(job);//제이슨오브젝트를 제이슨 어레이에 담는다.
+		}
+		return jobArr.toString();
+	}
+	
+	//전체조건조회-검색
+	@RequestMapping(value="totale.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String totle(@RequestParam Map<String, Object> map) {
+		System.out.println("map:"+map);
+		
+		//게시물 리스트
+		ArrayList<HashMap<String, String>> totalList = mService.totale(map);
+		
+		System.out.println("-------------------------------------");
+		
+		JSONArray jobArr = new JSONArray();
+		for(HashMap<String, String> checkCust : totalList) {
+			JSONObject job = new JSONObject(totalList);
+			job.put("mblNo", checkCust.get("MBL_NO"));
+			job.put("custSsCd", checkCust.get("CUST_SS_CD"));
+			job.put("custNo", checkCust.get("CUST_NO"));
+			job.put("custNM", checkCust.get("CUST_NM"));
+			job.put("jsDt", checkCust.get("JS_DT"));
+			job.put("prtNm", checkCust.get("PRT_NM"));
+			job.put("fstUserId", checkCust.get("FST_USER_ID"));
+			job.put("lstUpdDt", checkCust.get("LST_UPD_DT"));
+			
+			jobArr.put(job);//지정변수에 넣어서 제이슨 오브젝트에 담은 후 =>제이슨어레이에 담는다.
+		}
+		return jobArr.toString();
+	}
+	
+	//고객변경이력-팝업창
+	@RequestMapping(value="changeCust.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String changeCust(@RequestParam Map<String, Object> map) {
+		System.out.println("고객변경이력-팝업창 map:"+map);
+		
+		//고객정보(상단)
+		ArrayList<HashMap<String, String>> custInfoList = mService.custInfoList(map);
+		
+		//게시물 리스트(하단)
+		ArrayList<HashMap<String, String>> changeCustList = mService.changeCust(map);
+		
+		//고객정보(상단)
+		JSONArray jobArr = new JSONArray();
+		for(HashMap<String, String> changeCust : custInfoList) {
+			JSONObject job = new JSONObject(custInfoList);
+			job.put("custNo", changeCust.get("CUST_NO"));
+			job.put("custNm", changeCust.get("CUST_NM"));
+			
+			jobArr.put(job);
+		}
+		//게시물 리스트(하단)
+		for(HashMap<String, String> changeCust : changeCustList) {
+			JSONObject job = new JSONObject(changeCustList);
+			job.put("chgDt", changeCust.get("CHG_DT"));				//변경일자
+			job.put("chgCd", changeCust.get("CODE_NM"));			//변경항목
+			job.put("chgBfCnt", changeCust.get("CHG_BF_CNT"));		//변경전
+			job.put("chgAftCnt", changeCust.get("CHG_AFT_CNT"));	//변경후
+			job.put("lstUpdId", changeCust.get("USER_NM"));			//수정자
+			job.put("lstUpdDt", changeCust.get("LST_UPD_DT"));		//수정일시
+				
+			jobArr.put(job); 
+		}
+		//두개의 제이슨오브젝트를 하나의 제이슨어레이에 담아서 같이 전달해준다.
+		System.out.println(jobArr.toString());
+		return jobArr.toString();	
+	}
+	
+	//상세버튼 클릭시 페이지 이동
+	@RequestMapping("changeDt.me")
+	public ModelAndView changeDt(@RequestParam(value="changeDt") String changeDt, ModelAndView mv) {
+		System.out.println("changeDt:"+changeDt);//changeDt:1000000446 고객번호
+		//고객상세정보 리스트
+		HashMap<String, String> changeDtIn = mService.changeDtIn(changeDt);
+
+		mv.addObject("changeDtIn", changeDtIn);
+		mv.setViewName("custInfo");
+		System.out.println("mv:"+mv);
+		return mv;
+	}
+	
+	//매장월별식별조회 페이지 이동
+	@RequestMapping("saleMonth.me")
+	public ModelAndView saleMonth(ModelAndView mv, HttpSession session) {
+		String userId = ((Member)session.getAttribute("loginUser")).getUserId();
+		
+		System.out.println("매장월별식별조회 페이지 이동 userId:"+userId);
+		ArrayList<Member> list = mService.saleMonth(userId);
+		System.out.println("매장월별 로그인 정보:"+list);
+		mv.addObject("list", list);
+		mv.setViewName("saleMonth");
+		System.out.println(mv);
+		System.out.println(session);
+		return mv;
+	}
+	
+	//매월전체월별실적조회-전체검색
+	@RequestMapping(value="salMonthSum.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String salMonthSum(@RequestParam Map<String, Object> map) {
+		System.out.println("map:"+map);//map:{saleMonth=2022-08, CustCode=}
+			
+		//게시물 리스트
+		ArrayList<HashMap<String, String>> MonthTotale = mService.MonthTotale(map);
+			
+		System.out.println("MonthTotale:"+MonthTotale);
+		System.out.println("-------------------------------------");
+			
+		JSONArray jobArr = new JSONArray();
+		for(HashMap<String, String> checkCust : MonthTotale) {
+			JSONObject job = new JSONObject(MonthTotale);
+			job.put("prtCd", checkCust.get("PRT_CD"));
+			job.put("prtNm", checkCust.get("PRT_NM"));
+			job.put("day1", checkCust.get("DAY1"));
+			job.put("day2", checkCust.get("DAY2"));
+			job.put("day3", checkCust.get("DAY3"));
+			job.put("day4", checkCust.get("DAY4"));
+			job.put("day5", checkCust.get("DAY5"));
+			job.put("day6", checkCust.get("DAY6"));
+			job.put("day7", checkCust.get("DAY7"));
+			job.put("day8", checkCust.get("DAY8"));
+			job.put("day9", checkCust.get("DAY9"));
+			job.put("day10", checkCust.get("DAY10"));
+			job.put("day11", checkCust.get("DAY11"));
+			job.put("day12", checkCust.get("DAY12"));
+			job.put("day13", checkCust.get("DAY13"));
+			job.put("day14", checkCust.get("DAY14"));
+			job.put("day15", checkCust.get("DAY15"));
+			job.put("day16", checkCust.get("DAY16"));
+			job.put("day17", checkCust.get("DAY17"));
+			job.put("day18", checkCust.get("DAY18"));
+			job.put("day19", checkCust.get("DAY19"));
+			job.put("day20", checkCust.get("DAY20"));
+			job.put("day21", checkCust.get("DAY21"));
+			job.put("day22", checkCust.get("DAY22"));
+			job.put("day23", checkCust.get("DAY23"));
+			job.put("day24", checkCust.get("DAY24"));
+			job.put("day25", checkCust.get("DAY25"));
+			job.put("day26", checkCust.get("DAY26"));
+			job.put("day27", checkCust.get("DAY27"));
+			job.put("day28", checkCust.get("DAY28"));
+			job.put("day29", checkCust.get("DAY29"));
+			job.put("day30", checkCust.get("DAY30"));
+			job.put("day31", checkCust.get("DAY31"));
+			job.put("day31", checkCust.get("DAY31"));
+			job.put("totalSum", checkCust.get("TOT_SAL_QTY"));
+		
+			jobArr.put(job); 
+				
+		}
+			return jobArr.toString();
+	}
+	
+	//고객조회팝업창 경로설정
+	@RequestMapping("custSearchPopup.me")
+	public String custPopup() {
+		return "../common/custSearchPopup";
+	}
+		
+	
+	//신규등록팝업창 경로설정
+	@RequestMapping("pop_up.me")
+	public String popup() {
+		return "popup";
+	}
+	
+	//고객정보조회 페이지 이동
+	@RequestMapping("custInfo.me")
+	public ModelAndView custInfo(ModelAndView mv, HttpSession session) {
+		logger.info("고객정보조회 페이지 이동");
+		//공통코드 가져오기
+		ArrayList<HashMap<String, String>> CollectBillList = mService.CollectBill();
+		System.out.println("CollectBillList:"+CollectBillList);
+		
+		mv.addObject("list", CollectBillList);
+		mv.setViewName("custInfo");
+		return mv;
+	}
+	
+	//핸드폰번호 중복체크
+	@RequestMapping("phoneNum.me")
+	public void phoneNum(@RequestParam("phoneNum") String phoneNum, HttpServletResponse response) {
+		logger.info("핸드폰번호", phoneNum);
+		int result = mService.phoneNumble(phoneNum);
+		System.out.println(result);
+		
+		try {
+			response.getWriter().print(result);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	//신규등록 버튼 클릭 시
+	@RequestMapping(value="joinForm.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String joinForm(@RequestParam Map<String, Object> map) {
+		System.out.println("map"+map);
+		//CS_CUST01_MT : 고객등록
+		int joinForm = mService.joinForm(map);
+		System.out.println(joinForm);
+		
+		//고객등록 성공시 포인트 진행
+		if(joinForm == 1) {
+			//신규등록 포인트 1000추가 D(상세)
+			map.put("PNT_DS_CD", "100");//포인트구분코드 100
+			map.put("PNT_DS_DT_CD", "102");//포인트구분상세코드 102
+			map.put("PNT", "1000");////신규등록 포인트 1000추가
+			
+			int pointDt = mService.pointDt(map);
+			System.out.println("pointDt:"+pointDt);
+			
+			//신규등록 포인트 M(마스터)
+			int point = mService.point(map);
+			System.out.println("point:"+point);
+			
+		}
+		JSONObject job = new JSONObject();
+		job.put("join", joinForm);
+		System.out.println(".toString():"+job.toString());
+		return job.toString();
+	}
+	
+	
+	//고객전체조회버튼 클릭시
+	@RequestMapping(value="custTotal.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String custTotal(@RequestParam(value="custInput") String custInput) {
+		System.out.println("고객전체조회버튼:"+custInput);//
+		//고객상세정보 리스트
+		HashMap<String, String> custTotal = mService.changeDtIn(custInput);
+			
+		System.out.println("-------------------------------------");
+		JSONObject job = new JSONObject();
+		job.put("custTotal", custTotal);
+		System.out.println("고객전체조회버튼job:"+job.toString());
+		return job.toString();
+	}
+	
+	//변경이력 저장
+	@RequestMapping(value="ChangeHistory.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public int ChangeHistory(@RequestBody ArrayList<Map<String, Object>> list) {
+		logger.info("데이터담기", list);
+		System.out.println("----------");
+		System.out.println("데이터담기:"+ list);
+		logger.info("데이터담기list.get(0):", list.get(0));
+		System.out.println("----------");
+		System.out.println("데이터담기list.get(0):"+ list.get(0));
+
+		int updateBoard = mService.updateBoard(list.get(0));
+		System.out.println("----------");
+		System.out.println("변경이력updateBoard:"+ updateBoard);
+		logger.info("변경이력updateBoard:", updateBoard);
+		
+		int result = 0;
+		for(Map<String, Object> map : list) {
+			result = mService.ChangeHistory(map);
+			System.out.println("---------");
+			System.out.println("변경이력result:"+ result);
+			logger.info("변경이력result:", result);
+		}
+		return result;
+		
+	}
+
+///////////////////////////////고객판매관리///////////////////////////////////////////////////
+	//변경이력 저장
+	@RequestMapping(value="saleManagement.me")
+	public String saleManagement() {
+		return "saleManagement";
+	}
+
+///////////////////////////////고객판매수금등록 팝업창///////////////////////////////////////////////	
+	//고객판매수금등록 팝업창 경로설정
+	@RequestMapping("CollectBill.me")
+	public ModelAndView CollectBill(ModelAndView mv) {
+		logger.info("고객판매수금등록 팝업창 오픈");
+		//공통코드 가져오기
+		ArrayList<HashMap<String, String>> CollectBillList = mService.CollectBill();
+		System.out.println("CollectBillList:"+CollectBillList);
+		
+		mv.addObject("list", CollectBillList);
+		mv.setViewName("Collect_Bill");
+		return mv;
+	}	
+	
+///////////////////////////////매장재고조회 팝업창///////////////////////////////////////////////	
+	//매장재고조회 팝업창 경로설정
+	@RequestMapping("stock.me")
+	public String stock() {
+		return "stock";
+	}
+	
+	//고객판매관리 통합 검색 버튼 클릭 시 
+	@RequestMapping(value="saleManageTotal.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String saleManageTotal(@RequestParam Map<String, Object> map) {
+		System.out.println("고객판매관리(통합검색):"+map);
+
+		ArrayList<HashMap<String, String>> saleManageTotal = mService.saleManageTotal(map);
+		System.out.println("saleManageTotal:"+saleManageTotal);
+		JSONArray jobArr = new JSONArray();
+		for(HashMap<String, String> ManageTotal : saleManageTotal) {
+			JSONObject job = new JSONObject(saleManageTotal);
+			job.put("fstRegDt", ManageTotal.get("FST_REG_DT")); 	//최초등록일자
+			job.put("pnt", ManageTotal.get("PNT_STLM_AMT"));		//포인트사용금액
+			job.put("salRtn", ManageTotal.get("SAL_TP_CD"));		//판매구분코드
+			job.put("cash", ManageTotal.get("CSH_STLM_AMT")); 		//현금결제금액
+			job.put("userNm", ManageTotal.get("USER_NM"));			//최초등록자
+			job.put("salNo", ManageTotal.get("SAL_NO"));			//판매번호
+			job.put("card", ManageTotal.get("CRD_STLM_AMT"));		//카드결제금액
+			job.put("salDt", ManageTotal.get("SAL_DT"));		 	//판매일자
+			job.put("custNo", ManageTotal.get("CUST_NO"));			//고객번호
+			job.put("salAmt", ManageTotal.get("SAL_AMT"));			//판매금액
+			job.put("custNm", ManageTotal.get("CUST_NM"));			//고객명
+			job.put("salQty", ManageTotal.get("SAL_QTY"));			//판매수량
+			job.put("fstUserId", ManageTotal.get("FST_USER_ID"));	//등록자 아이디
+			job.put("prtCd", ManageTotal.get("PRT_CD"));			//구매매장코드
+			job.put("prtNm", ManageTotal.get("PRT_NM"));			//구매매장명
+			
+			jobArr.put(job);
+		}
+		return jobArr.toString();
+	}
+	
+///////////////////////////////판매상세조회 팝업창///////////////////////////////////////////////	
+	//판매상세조회 팝업창 띄우기
+	@RequestMapping("DetailSale.me")
+	public String DetailSale() {
+		return "Detail_sale";
+	}	
+	
+	//판매상세조회 내역-팝업창
+	@RequestMapping(value="ManageDetail.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String ManageDetail(@RequestParam Map<String, Object> map) {
+		System.out.println("판매상세조회 내역:"+map);
+		
+		//판매리스트(값이 여러개)를 가져오기 때문에 ArrayList 사용
+		ArrayList<HashMap<String, String>> ManageDetail = mService.ManageDetail(map);
+		System.out.println("ManageDetail:"+ManageDetail);
+		JSONArray jobArr = new JSONArray();
+		for(HashMap<String, String> ManageTotal : ManageDetail) {
+			JSONObject job = new JSONObject(ManageDetail);
+			job.put("salSeq", ManageTotal.get("SAL_SEQ")); 			//판매일련번호
+			job.put("prdNm", ManageTotal.get("PRD_NM")); 			//상품명
+			job.put("salVosAmt", ManageTotal.get("SAL_VOS_AMT")); 	//판매공급가
+			job.put("prdCd", ManageTotal.get("PRD_CD"));			//상품코드
+			job.put("salVatAmt", ManageTotal.get("SAL_VAT_AMT"));	//부가세
+			job.put("salAmt", ManageTotal.get("SAL_AMT"));			//판매금액
+			job.put("salQty", ManageTotal.get("SAL_QTY"));			//판매수량
+			job.put("ORG", ManageTotal.get("ORG"));					//반품&판매
+			job.put("CRD_NO", ManageTotal.get("CRD_NO"));			//카드번호
+			job.put("VLD_YM", ManageTotal.get("VLD_YM"));			//유효년월
+			job.put("CRD_CO_CD", ManageTotal.get("CRD_CO_CD"));		//카드회사
+	
+			jobArr.put(job);
+		}
+		System.out.println(jobArr.toString());
+		return jobArr.toString();
+	}
+	
+/////////////////////////////상품코드 검색////////////////////////////////////////////	
+	//상품코드 검색 조회-존재 시 자동완성
+	@RequestMapping(value="goodsCode_Search.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String goodsCode(@RequestParam Map<String, Object> map) {
+			
+		System.out.println("상품코드(자동완성):"+map);
+		//게시물 리스트
+		ArrayList<HashMap<String, String>> goodslist = mService.goodsCode(map);
+		System.out.println("상품코드(자동완성)list:"+goodslist);
+		
+		JSONArray jobArr = new JSONArray();
+		for(HashMap<String, String> goodsCode : goodslist) {
+			JSONObject job = new JSONObject(goodslist);
+			job.put("Qty", goodsCode.get("IVCO_QTY")); 			//재고수량
+			job.put("prdCd", goodsCode.get("PRD_CD"));			//상품코드
+			job.put("prdNm", goodsCode.get("PRD_NM"));			//상품명
+			job.put("prdTpCd", goodsCode.get("PRD_TP_CD")); 	//본품:10,견본품:20 구분
+			job.put("prdSsCd", goodsCode.get("PRD_SS_CD"));		//상품상태(R:판매,C:해지)
+			job.put("prdUpr", goodsCode.get("PRD_CSMR_UPR"));	//소비자단가가 0보다 커야함
+	
+			jobArr.put(job);
+		}
+		System.out.println("jobArr:"+jobArr);
+		return jobArr.toString();
+	}	
+	
+	//매장재고 조회
+	@RequestMapping(value="goods_stock.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String goodsStock(@RequestParam Map<String, Object> map) {
+				
+		System.out.println("매장재고:"+map);//매장재고:{checkShop=1000}
+		//게시물 리스트
+		ArrayList<HashMap<String, String>> stock = mService.stock(map);
+		System.out.println("상품코드(자동완성)list:"+stock);
+			
+		JSONArray jobArr = new JSONArray();
+		for(HashMap<String, String> goodsCode : stock) {
+			JSONObject job = new JSONObject(stock);
+			job.put("prtNm", goodsCode.get("PRT_NM"));			//매장명
+			job.put("Qty", goodsCode.get("IVCO_QTY")); 			//재고수량
+			job.put("prdCd", goodsCode.get("PRD_CD"));			//상품코드
+			job.put("prdNm", goodsCode.get("PRD_NM"));			//상품명
+			job.put("prdTpCd", goodsCode.get("PRD_TP_CD")); 	//본품:10,견본품:20 구분
+			job.put("prdSsCd", goodsCode.get("PRD_SS_CD"));		//상품상태(R:판매,C:해지)
+			job.put("prdUpr", goodsCode.get("PRD_CSMR_UPR"));	//소비자단가가 0보다 커야함
+		
+			jobArr.put(job);
+		}
+		System.out.println("jobArr:"+jobArr);
+		return jobArr.toString();
+	}	
+	
+	//고객판매수금 등록 및 반품
+	@RequestMapping(value="collectBill.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public String collectBill(@RequestParam Map<String, Object> list) {
+		System.out.println("고객판매수금 map:"+list);
+		System.out.println("고객판매수금 salePay: "+list.get("salePay"));
+		System.out.println("고객판매수금 payList: "+list.get("payList"));
+		System.out.println("고객판매수금 pointDt: "+list.get("pointDt"));
+		System.out.println("고객판매수금 pointMt: "+list.get("pointMt"));
+		System.out.println("고객판매수금 size: "+list.size());
+		
+		Map<String, Object> salePay = net.sf.json.JSONObject.fromObject(list.get("salePay"));
+		List<Map<String, Object>> payList = net.sf.json.JSONArray.fromObject(list.get("payList"));
+		List<Map<String, Object>> pointDt = net.sf.json.JSONArray.fromObject(list.get("pointDt"));
+		Map<String, Object> pointMt = net.sf.json.JSONObject.fromObject(list.get("pointMt"));
+		System.out.println("salePay: " + salePay);
+		System.out.println("payList: " + payList);
+		System.out.println("pointDt: " + pointDt);
+		System.out.println("pointMt: " + pointMt);
+		
+		//MT가 DT보다 먼저 실행되야함.=>판매번호 생성 때문에.
+		//고객판매 수금등록  고객판매insert => CS_SAL01_MT
+		logger.info("고객판매 수금등록MT");
+		int saleInsert = mService.saleInsert(salePay);
+		System.out.println("판매MT_insert:"+saleInsert);
+		System.out.println("-------");
+		
+		int saleDtInsert;
+		
+		//판매 MT등록 성공시 DT진행
+		if(saleInsert == 1) {
+			//고객판매 수금등록  고객판매상세insert => CS_SAL01_DT
+			System.out.println("CS_SAL01_DT");
+			logger.info("고객판매 수금등록DT");
+			//리스트로 만든 후 반복문으로 map에 담는다.
+			System.out.println("payList:"+payList);
+			for (Map<String, Object> map : payList) {
+				map.put("SAL_NO_PK", salePay.get("SAL_NO_PK"));			//MT에서 생성한 판매번호
+				System.out.println("고객판매 수금등록DT-map: "+map);
+				saleDtInsert = mService.saleDtInsert(map);
+				System.out.println("판매상세insert:"+saleDtInsert);
+			}
+		}
+		
+		//포인트 dt테이블 insert =>CS_CUST_PNT_D
+		for (Map<String, Object> map : pointDt) {
+			System.out.println("포인트 DT-map: "+map);
+			System.out.println(map);			
+			int pointDtList = mService.pointDt(map);
+			System.out.println("pointDtList:"+pointDtList);
+			
+		}
+		
+		//포인트 MT테이블 update =>CS_CUST_PNT_M - CUST_NO, PNT_SEQ, fstUserId
+		int point = mService.point(pointMt);
+		System.out.println("point:"+point);
+		
+		/////////////////////////////////////////////////////////
+		int CustCollect = 0;
+		//판매 등록 성공시 매장현재고 업데이트
+		if(saleInsert == 1) {
+			//고객판매 수금등록 매장현재고UPDATE => SD_IVCO01_MT
+			for(Map<String, Object> map : payList) {
+				System.out.println("매장현잔고");
+				System.out.println(map);
+				
+				CustCollect = mService.CustCollect(map);
+				System.out.println("CustCollect:"+CustCollect);
+			}
+		}
+		JSONObject job = new JSONObject();
+		job.put("collectBill", CustCollect);//성공시 1이 담김.
+		
+		System.out.println("job:"+job);
+		return job.toString();
+			
+	}
+	
+	//포인트 사용액 체크
+	@RequestMapping("checkPoint.me")
+	public void checkPoint(@RequestParam Map<String, Object> map, HttpServletResponse response) {
+		logger.info("포인트 사용액 확인", map);
+		System.out.println(map);
+		int result = mService.checkPoint(map);
+		System.out.println("result: "+result);
+			
+		try {
+			response.getWriter().print(result);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	//재고 체크
+	@RequestMapping(value="stockCheck.me", produces="application/json; charset=UTF-8")
+	@ResponseBody
+	public void stockCheck(@RequestParam Map<String, Object> mapList, HttpServletResponse response) {
+		logger.info("재고확인", mapList);
+		System.out.println(mapList);
+
+		List<Map<String, Object>> stockList = net.sf.json.JSONArray.fromObject(mapList);
+		
+		int result = 0;
+		int resultPass = 0;
+		for(Map<String, Object> map : stockList) {
+			result = mService.stockCheck(map);
+			System.out.println("---------");
+			System.out.println("재고 체크: "+ result);
+			
+			if(result == 0) {
+				resultPass = 0;
+			}else {
+				resultPass = 1;
+			}
+		}
+		
+		try {
+			response.getWriter().print(resultPass);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

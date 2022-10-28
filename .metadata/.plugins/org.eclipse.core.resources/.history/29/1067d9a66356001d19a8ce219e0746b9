@@ -1,0 +1,84 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>관리자 페이지</title>
+ <!-- jQuery -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js" ></script>
+<!-- 매장검색 자바스크립트 -->
+<script type="text/javascript" src="./resources/js/saleScript.js"></script>
+<!-- 매장월별실적 자바스크립트 -->
+<script type="text/javascript" src="./resources/js/saleMonthScript.js"></script>
+<!-- 페이지 스타일css -->
+<link href="resources/CSS/saleMonth.css" rel="stylesheet">
+<c:import url="../common/navbar.jsp"/>
+</head>
+<body>
+<c:import url="../common/sidebar.jsp"/>
+<div class="Wrap">
+	<div class="starBox">
+		<span class="star">★</span>
+	</div>
+	<span class="Title">매장월별실적조회</span>
+	<!-- 새로고침 -->
+	<button id="reload" onClick="window.location.reload()">
+		<img class="Refresh" src="resources/cust_in/Refresh.png" style="cursor:pointer;">
+	</button>
+	<div class="SearchBox">
+		<div class="wrap_mg">
+			<span class="essential">*</span>
+			<span class="Text_space" id="sale">매출월</span>
+			<input class="Text_box" type="month" id="saleMonth-list">
+			<span class="Text_space" id="Cust_Num">매장</span>
+			<!-- 매장사용자인 경우 -->
+			<c:if test="${ loginUser.userDtCd == 2 }">
+				<input class="Text_box" id="saleCode" value="${ loginUser.prtCd }" disabled>
+			</c:if>
+			<!-- 본사인 경우 -->
+			<c:if test="${ loginUser.userDtCd == 1 }">
+				<input class="Text_box" id="saleCode">
+			</c:if>
+			<!-- 검색버튼 -->
+				<button id="Search_but_num" onclick="Search_but_search()">
+					<img class="total_search" src="resources/cust_in/search.png">
+				</button>
+			<!-- 매장사용자인 경우 -->
+			<c:if test="${ loginUser.userDtCd == 2 }">
+				<input class="Text_box" id="saleName" value="${ loginUser.prtNm }" disabled>
+			</c:if>
+			<!-- 본사인 경우 -->
+			<c:if test="${ loginUser.userDtCd == 1 }">
+			<input class="Text_box" id="saleName" onkeyup="saleEvent(event);" onkeydown="enter(event);" value="">
+			</c:if>
+			<!-- 전체검색 -->
+			<button id="Search_but">
+				<img class="total_search" src="resources/cust_in/search.png">
+			</button>
+		</div>
+		<br>
+	</div>
+</div>
+<!-- 월별 실적표 -->
+<table id="sale-table">
+	<thead>
+    	<tr>
+        	<th class="CustNum">매장코드</th>
+            <th class="CustDetail">매장명</th>
+            <!-- forEach 1일-31일 반복 -->
+            <c:forEach var="i" begin="1" end="31">
+            	<th class="dateDay">
+            		<c:out value="${i}" />일
+            	</th>
+            </c:forEach>
+            <!-- forEach 1일-31일 반복 end-->
+            <th class="dateSum" id="dataSumTitle">합계</th>
+        </tr>
+    </thead>
+	<tbody id="saleMonthSum">
+	</tbody>
+</table>
+</body>
+</html>

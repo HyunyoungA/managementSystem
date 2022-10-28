@@ -1,0 +1,58 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>매장재고조회</title>
+<!-- jQuery -->
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js" ></script>
+<!-- 재고팝업창 자바스크립트 -->
+<script type="text/javascript" src="./resources/js/stockScript.js" ></script>
+<!-- 페이지 스타일css -->
+<link href="resources/CSS/stock.css" rel="stylesheet">
+</head>
+<body>
+	<div id="custHidden"></div>
+	<div id="" class="white_content">
+	<input type="hidden" id="trSize"><!-- tr사이즈 -->
+	<input type="hidden" id="checkShop"><!-- 부모창 검색어 -->
+	<input type="hidden" id="saleNum">
+	<input type="hidden" id="num"><!-- 부모창 버튼값 -->
+		<h3 style="text-align: center;">매장재고조회</h3>
+		<div class="CustCheck_Wrap">
+			<span>매장</span>
+			<input class="CustCheck_Info" id="saleName" value="${ loginUser.prtNm }" disabled style="margin-right: 26px;">
+			<span>상품(코드+명)</span>
+			<input class="CustCheck_Info" id="goodsCodeName">
+			<button id="Search_but" onclick="checkCust();">
+				<img class="total_search" src="resources/cust_in/search.png">
+			</button>
+		</div>
+		<!-- 매장재고조회 내용 -->
+		<table class="Cust_stock" id="custTb" onclick="clickEvent(this);">
+			<thead>
+		    	<tr>
+		    		<th class="Check_Box">선택</th>
+		        	<th class="goodsNum">상품코드</th>
+		            <th class="goodsName">상품명</th>
+		            <th class="stockCount">재고수량</th>
+		            <th class="custPrice">소비자가</th>
+		        </tr>
+		    </thead>
+			<tbody id="custPopup">
+			</tbody>
+		</table>
+		<div style="text-align: center;margin-top: 36px;">
+			<button class="popupBut" onclick="window.close();">
+			닫기
+			</button>
+			<button class="popupBut" onclick="stock()">
+			적용
+			</button>
+		</div>
+		</div>
+</body>
+</html>

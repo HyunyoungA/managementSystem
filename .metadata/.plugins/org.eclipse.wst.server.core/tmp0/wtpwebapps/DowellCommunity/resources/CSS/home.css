@@ -1,0 +1,151 @@
+@charset "UTF-8";
+
+#body{
+	margin: 0;
+    padding: 0;
+}
+#wrap{
+	min-width: 1084px;
+    min-height: 100%;
+    position: relative;
+}
+
+#header{
+	height: 205px;
+    background-color: white;
+}
+#contain{
+	text-align: center;
+	height: 430px;
+    background-color: white;
+}
+/* Slideshow container */
+.slideshow-container {
+	  max-width: 1440px;
+	  position: relative;
+	  margin: auto;
+	  margin-top: 120px;
+}
+/* effect */
+.fade {
+	  -webkit-animation-name: fade;
+	  -webkit-animation-duration: 1.5s;
+	  animation-name: fade;
+	  animation-duration: 1.5s;
+}
+@-webkit-keyframes fade {
+	  from {opacity: .4} 
+	  to {opacity: 1}
+}	
+@keyframes fade {
+	  from {opacity: .4} 
+	  to {opacity: 1}
+}
+/* Next & previous buttons */
+.prev, .next {
+	  cursor: pointer;
+	  position: absolute;
+	  top: 50%;	
+	  width: auto;
+	  padding: 16px;
+	  margin-top: -22px;
+	  color: white;
+	  font-weight: bold;
+	  font-size: 18px;
+	  transition: 0.6s ease;
+	  border-radius: 0 3px 3px 0;
+}
+.next {
+	  right: 0;
+	  border-radius: 3px 0 0 3px;
+}
+.prev:hover, .next:hover {
+	  background-color: rgba(0,0,0,0.8);
+}
+#prevId{
+	left: 0;
+}
+.service {
+    font-weight: 800;
+    font-size: 24px;
+}
+.cate {
+    margin: 0 25px;
+    background-color: #F6F6F6;
+    width: 80px;
+    height: 80px;
+    border-radius: 15px;
+    display: inline-block;
+}
+.cateGroup{
+	margin-top: 24px;
+}
+.Top_wrap{
+	height: 150px;
+	border-bottom: 1px solid #D5D5D5;
+}
+ul{
+	list-style: none;
+}
+.totalCate ul li{
+	float: left;
+	margin: 0 24px;
+}
+.totalCate ul{
+	display: inline-flex;
+}
+.totalCate{
+	text-align: center;
+	font-weight: 600;
+}
+.totalCate ul li a{
+	font-size: 13px;
+}
+.gnb>li{
+	display:none;
+}
+.gnb:hover{
+		display:block;
+}
+/* 컨텐츠 리스트 */
+.list_conts {
+	display: inline-table;
+    height: 360px;
+    width: 180px;
+    margin: 10px;
+}
+.list_wrap{
+	padding: 20 100px;
+}
+.text{
+	text-align: left;
+}
+a{
+	cursor: pointer;
+}
+a:hover{
+	color: #EB002B;
+}
+.banner{
+    height: 50px;
+}
+.search_wrap{
+	margin: auto;
+    margin-top: 30px;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #dfe1e5;
+    border-radius: 24px;
+    width: 448px;
+    height: 40px;
+    display: block;
+}
+#search{
+	border: none;
+	width: 400px;
+    height: 38px;
+    
+}
+#search:focus{
+	outline: none;
+}

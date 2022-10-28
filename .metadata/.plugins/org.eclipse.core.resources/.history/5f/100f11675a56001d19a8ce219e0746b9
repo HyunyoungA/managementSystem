@@ -1,0 +1,394 @@
+@charset "UTF-8";
+
+body {
+	margin-top: 20px;
+}
+
+table {
+	font-size: 15px;
+}
+
+tbody {
+	font-size: 13px;
+}
+
+#CustCode1 {
+	background-color: #BDBDBD;
+}
+
+#reload {
+	background-color: white;
+	border: none;
+}
+/* 매장조회 팝업창 */
+#light_shop {
+	text-align: center;
+	margin: 0 auto;
+	font-size: 14px;
+}
+
+.CustCheck_Wrap_shop {
+	height: 65px;
+	background: #F6F6F6;
+	padding: 15px;
+}
+
+.white_content_shop {
+	display: none;
+	position: absolute;
+	top: 45%;
+	left: 22%;
+	width: 750px;
+	height: 472px;
+	padding: 16px;
+	border: 1px solid #BDBDBD;
+	background-color: white;
+	z-index: 1002;
+	overflow: auto;
+	border-radius: 1.5rem;
+}
+
+.Cust_popup_table {
+	border: 1px solid gray;
+	height: 250px;
+	border-collapse: collapse;
+	width: 100%;
+	display: block;
+	height: 16rem;
+}
+
+.Cust_popup_table thead {
+	table-layout: fixed;
+	width: 100%;
+	height: 32px;
+}
+
+#searchPopup {
+	overflow: auto;
+}
+
+#searchPopup {
+	width: 100%;
+	display: block;
+	height: 14rem;
+}
+
+.Check_Box {
+	width: 60px;
+	position: sticky;
+	top: 0px;
+	/*     background-color: #E61200 !important; */
+	color: white;
+}
+
+.black_overlay {
+	display: none;
+	position: absolute;
+	top: 0%;
+	left: -15%;
+	width: 115%;
+	height: 224%;
+	background-color: rgba(0, 0, 0, 0.4);
+	z-index: 1001;
+	-moz-opacity: 0.8;
+	opacity: .80;
+	filter: alpha(opacity = 80);
+}
+
+.popupBut {
+	border-style: none;
+	border-radius: 6px;
+	margin: 10px;
+	width: 150px;
+	height: 40px;
+}
+
+.CustCheck_Info {
+	width: 190px;
+	height: 34px;
+	border: 1px solid #A6A6A6;
+}
+
+th, td {
+	border: 1px solid #444444;
+	background-color: white;
+}
+
+#dataSumTitle {
+	text-align: center;
+}
+
+#title {
+	font-weight: 600;
+	margin-left: 35px;
+	font-size: 20px;
+}
+
+#titleSub {
+	color: gray;
+	margin-left: 35px;
+	font-size: 16px;
+}
+
+.inputBox {
+	border: 1px solid #BDBDBD;
+	width: 119px;
+	height: 25px;
+	margin-left: 2px;
+}
+
+.loginInputBox {
+	border: 1px solid #BDBDBD;
+	width: 100px;
+	height: 25px;
+}
+
+.phoneinputBox {
+	border: 1px solid #BDBDBD;
+	width: 40px;
+	height: 25px;
+}
+
+.custNameWrap {
+	width: 273px;
+	display: inline-block;
+	margin: 10px 20px 1px 20px;
+}
+
+.custCauseWrap {
+	width: 273px;
+	display: inline-block;
+	margin: 20px 30px;
+}
+
+.custDateWrap {
+	width: 273px;
+	display: inline-block;
+	margin: 10px 20px 20px 20px;
+}
+
+.custNameWrapR {
+	padding-left: 35px;
+	width: 253px;
+	display: inline-block;
+}
+
+.custShopWrap {
+	width: 324px;
+	display: inline-block;
+	margin-left: 35px;
+}
+
+.textWrap {
+	margin-right: 7px;
+}
+
+.custPhoneWrap {
+	width: 328px;
+	display: inline-block;
+	margin: 20px 0px 20px 20px;
+}
+
+.custAddressWrap {
+	width: 537px;
+	display: inline-block;
+	margin: 20px 30px 5px 131px;
+}
+
+.custEmailWrap {
+	width: 331px;
+	display: inline-block;
+	/*     margin: 10px 20px; */
+}
+
+.custAddressTextWrap {
+	width: 309px;
+	display: inline-block;
+	margin: 10px 20px;
+}
+
+.custStateWrap {
+	width: 363px;
+	display: inline-block;
+	margin: 10px 24px 10px 50px;
+}
+
+.firstJoinWrap {
+	width: 293px;
+	display: inline-block;
+	margin: 10px 10px;
+}
+
+.joinWrap {
+	width: 244px;
+	display: inline-block;
+	margin: 10px 12px 0px 33px;
+}
+
+.stopWrap {
+	width: 244px;
+	display: inline-block;
+	margin: 20px 0px 0 52px;
+}
+
+.exWrap {
+	width: 244px;
+	display: inline-block;
+	margin: 10px 60px 0 92px;
+}
+
+#custScalY {
+	margin-left: 50px;
+}
+
+.custScalWrap {
+	width: 230px;
+	display: inline-block;
+}
+
+#custStateY {
+	margin-left: 52px;
+}
+
+#custSexId {
+	margin-left: 50px;
+}
+
+#custNameId {
+	margin-left: 51px;
+}
+
+#custEmailId {
+	width: 70px;
+	margin-left: 36px;
+}
+
+#custDateBox {
+	margin-left: 38px;
+}
+
+#custMarryBox {
+	margin-left: 22px;
+}
+
+#jobCode {
+	margin-left: 26px;
+}
+
+#custJoinBox {
+	margin-left: 26px;
+}
+
+#causeBox {
+	margin-left: 52px;
+}
+
+#stopBox {
+	margin-left: 33px;
+}
+
+#cancelBox {
+	margin-left: 28px;
+}
+
+#buy-table {
+	font-size: 13px;
+	margin-bottom: 20px;
+	margin-top: 10px;
+	padding-top: 10px;
+	display: block;
+	border: 1px solid #D5D5D5;
+	width: 690px;
+	margin-left: 20px;
+	height: 100px;
+}
+
+.buyWrap {
+	width: 240px;
+	display: inline-block;
+	margin: 10px 20px;
+}
+
+#close {
+	margin-left: 180px;
+}
+
+.popupBut:hover {
+	background-color: black;
+	color: white;
+	cursor: pointer;
+}
+/* 고객기본정보표 */
+#sale-table {
+	font-size: 13px;
+	margin-bottom: 40px;
+	margin-top: 10px;
+	padding-top: 10px;
+	display: block;
+	border: 1px solid #D5D5D5;
+	width: 690px;
+	margin-left: 20px;
+	height: 370px;
+}
+
+.radio_check {
+	vertical-align: text-top;
+	width: 20px;
+	height: 20px;
+}
+
+#Search_but_num {
+	margin-left: -37px;
+	position: absolute;
+	background-color: #3E76D6;
+	border-style: none;
+	width: 31px;
+	height: 28px;
+	margin-top: 2px;
+}
+
+#Search_but_num:hover {
+	cursor: pointer;
+}
+
+.total_search {
+	filter: brightness(0) invert(1);
+	width: 30px;
+	height: 21px;
+	margin: 2px -4px;
+}
+
+input:focus {
+	border-color: #8BBCFF;
+	outline: none;
+}
+
+#phoneBut {
+	border-style: none;
+	border-radius: 6px;
+	width: 41px;
+	height: 29px;
+}
+
+#phoneBut:hover {
+	background-color: black;
+	color: white;
+	cursor: pointer;
+}
+
+#custNameSpan {
+	margin-left: 110px;
+}
+
+#addressSpan {
+	margin-left: 111px;
+}
+
+#guide {
+	margin-left: 111px;
+}
+
+.essential {
+	color: red;
+	font-weight: 700;
+}

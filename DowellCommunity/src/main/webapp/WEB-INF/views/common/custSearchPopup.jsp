@@ -1,0 +1,55 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>고객조회</title>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js" ></script>
+<!-- 고객조회팝업창 자바스크립트 -->
+<script type="text/javascript" src="./resources/js/custSearchPopupScript.js" ></script>
+<!-- 페이지 스타일css -->
+<link href="resources/CSS/custSearchPopup.css" rel="stylesheet">
+</head>
+<body>
+<!-- 고객조회 팝업창 -->
+	<div class="white_content">
+	<input type="hidden" id="checkShop">
+		<h3 style="text-align: center;">고객조회</h3>
+		<div class="CustCheck_Wrap">
+			<span>고객이름</span>
+			<input class="CustCheck_Info" id="CheckCustName">
+			<span>핸드폰번호</span>
+			<input class="CustCheck_Info" id="CheckCustPhone" onkeyup="autoHypen(this)">
+			<button id="Search_but" onclick=checkCust();>
+				<img class="total_search" src="resources/cust_in/search.png">
+			</button>
+		</div>
+		<!-- 고객조회 내용 -->
+		<table class="Cust_popup_table" id="custTb">
+			<thead>
+		    	<tr>
+		    		<th class="Check_Box">선택</th>
+		        	<th class="CustNum">고객번호</th>
+		            <th class="CustDetail">고객명</th>
+		            <th class="CustPhone">핸드폰번호</th>
+		            <th class="memberState">고객상태</th>
+		        </tr>
+		    </thead>
+			<tbody id="custPopup">
+			</tbody>
+		</table>
+		<div id="centerWrap">
+			<button class="popupBut" onclick="window.close();">
+			닫기
+			</button>
+			<button type="submit" class="popupBut" onclick="custPopUpsumit()">
+			적용
+			</button>
+		</div>
+		</div>
+<!-- 고객조회 팝업창end -->
+</body>
+</html>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;DowellCommunity/src/main/webapp/WEB-INF/views/common/custSeachPopup.jsp&apos; to &apos;custSearchPopup.jsp&apos;" description="Rename resource &apos;custSeachPopup.jsp&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/main/webapp/WEB-INF/views/common/custSeachPopup.jsp" name="custSearchPopup.jsp" stamp="1663436888301" updateReferences="true"/>
+</session>

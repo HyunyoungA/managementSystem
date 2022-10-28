@@ -1,0 +1,27 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>로그인</title>
+<!-- 로그인 자바스크립트 -->
+<script type="text/javascript" src="./resources/js/adminScript.js" ></script>
+<link href="resources/CSS/login.css" rel="stylesheet">
+<!-- 네비바 -->
+<c:import url="../common/navbar.jsp"/>
+</head>
+<body>
+<form action="loginOn.me" method="post">
+	<div class="login_Wrap">
+		<div class="loginBox">
+			<h3>로그인</h3>
+			<input class="loginInfo" id="userId" name="userId" placeholder="아이디" required><br>
+			<input class="loginInfo" id="userPwd" name="userPwd" placeholder="비밀번호" required type="password"><br>
+			<button class="join" onclick="login();">로그인</button>
+		</div>
+	</div>
+</form>
+</body>
+</html>

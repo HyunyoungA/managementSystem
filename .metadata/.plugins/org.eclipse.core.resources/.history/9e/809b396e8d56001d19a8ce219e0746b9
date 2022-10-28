@@ -1,0 +1,131 @@
+@charset "UTF-8";
+
+/* body여백 없애기 */
+body{
+	margin: 0;
+	padding: 0;
+}
+.white_content {
+    top: 45%;
+    left: 15%;
+    padding: 16px;
+    background-color: white;
+    z-index: 1002;
+    overflow: auto;
+    border-radius: 1.5rem;
+}
+.CustCheck_Wrap{
+	height: 65px;
+    background: #F6F6F6;
+    padding: 15px;
+}
+#CheckCustName{
+	margin-right: 26px;
+}
+.CustCheck_Info{
+	width: 190px;
+    height: 34px;
+    border: 1px solid #A6A6A6;
+}
+/* 검색버튼 */
+#Search_but{
+	width: 50px;
+	height: 50px;
+	float: right;
+	background-color: #3E76D6;
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+}
+.total_search{
+	filter: brightness(0) invert(1);
+	width: 30px;
+	height: 21px;
+	margin: 2px -4px;
+}
+.Cust_popup_table {
+	width: 100%;
+    height: 14rem;
+}
+.Cust_popup_table{
+    border: 1px solid gray;
+	height: 250px;
+    border-collapse: collapse;
+}
+.Cust_popup_table thead {
+    table-layout: fixed;
+    display: block;
+    width: 100%;
+    height: 32px;
+}
+.Cust_popup_table tbody {
+	width: 100%;
+	display: block;
+    height: 14rem;
+}
+.Check_Box{
+    width: 60px;
+}
+.CustNum{
+	width: 158px;
+}
+.CustDetail{
+	width: 120px;
+}
+.CustPhone{
+	text-align: center;
+    width: 175px;
+}
+.memberState{
+    text-align: center;
+    width: 110px;
+}
+.popupBut{
+    border-style: none;
+    border-radius: 6px;
+    margin: 10px;
+    width: 150px;
+    height: 40px;
+}
+.popupBut:focus{
+	cursor: pointer;
+}
+.Check_Box_point{
+	font-size: 0px;
+	width: 60px;
+    text-align: center;
+}
+
+tbody{
+	overflow:auto;
+	font-size: 13px;
+}
+thead {
+    table-layout: fixed;
+    display: block;
+    width: 100%;
+    height: 35px;
+}
+table thead tr {
+	display:table;
+    table-layout:fixed;
+    width:100%;
+}
+tbody tr {
+    width: 100%;
+	display: table;
+    table-layout: fixed;
+}
+table thead th{
+	position: sticky;
+    top: 0px;
+    background-color: #3E76D6 !important;
+    color: white;
+}
+th, td {
+	border: 1px solid #444444;
+	padding: 6px;
+}
+table{
+	font-size: 15px;
+}

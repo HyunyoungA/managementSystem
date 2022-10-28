@@ -1,0 +1,415 @@
+/**
+고객 수금 등록 팝업창
+ * 
+ */
+
+/////////////////////////////////////상품코드검색///////////////////////////////////////////////
+//상품코드검색 엔터
+$(document).on('keypress', '.goodsSe', function enter(e){//키가 올라갈때마다 상품코드의 클래스 중 입력된 값을 가져온다.
+			      
+	console.log(e);
+	if (e.keyCode == 13) {
+		// 엔터키가 눌렸을 때
+		console.log(e);
+		console.log(e.target.value);
+		console.log(e.target.id);
+			     	
+		var str = e.target.id;//이벤트가 일어난 아이디의 숫자만 구분해서 가져온다 => 아이디에 있는 숫자는 인덱스번호와 같다.
+		const regex = /[^0-9]/g;
+		const result = str.replace(regex, "");
+		const number = parseInt(result);//문자열 result를 int로 파싱한다.
+		console.log(number);
+		var num = Number(number);//숫자로 형변환
+		goods_but(num);
+	}
+	
+});
+
+//상품코드 검색
+function goods_but(btn){
+	debugger;
+
+	console.log(typeof btn);
+	console.log(btn);
+	//클릭한 버튼값 : btn
+	var goodsCode;
+	//클릭으로 넘어왔을 시 값이 오브젝트(형태)로 넘어옴.
+	if(typeof btn == "object"){
+		var btn = $(btn).val()
+		goodsCode = document.getElementById('goodsSearch'+btn).value;//상품코드
+		var saleCode = document.getElementById('sale_Code').value;//매장코드
+	//엔터로 넘어왔을 시 값이 숫자(형태)로 넘어옴.
+	}else if(typeof btn == "number"){
+		goodsCode = document.getElementById('goodsSearch'+btn).value;//상품코드
+		var saleCode = document.getElementById('sale_Code').value;//매장코드
+	}
+	console.log(btn);
+	console.log(goodsCode);
+	console.log(saleCode);
+
+	//상품코드 존재하면 자동완성
+	$.ajax({
+		url: 'goodsCode_Search.me',
+		data: {"goodsCode":goodsCode
+			 , "saleCode":saleCode},
+		type: 'post',
+		dataType: 'json', 
+		success: function(data){
+			console.log(data.length);
+			console.log(data);
+			
+			if(data.length == 1) {//결과값이 1개이기 때문에 자동완성으로 값이 들어간다.
+				
+				//상품상태=C 해지이거나, 소비자단가가 0이거나, 재고가 없거나, 견본품일 시
+				if(data[0].prdSsCd == "C" || data[0].prdUpr == 0 || data[0].Qty == 0 || data[0].prdTpCd == 20){
+
+					//견본품일 시
+					if(data[0].prdTpCd == "20"){//상품유형이 20(견본품)일 시
+						alert("판매할 수 없는 상품입니다.");
+					}
+					//상품상태가 해지 
+					if(data[0].prdSsCd == "C"){
+						alert("상품상태가 정상이 아닙니다.");
+					}
+					//소비자단가가 0
+					if(data[0].prdUpr == "0"){
+						alert("소비자단가가 없습니다.");
+					}
+					//재고가 없을 시
+					if(data[0].Qty == "0"){
+						alert("재고가 없습니다.");
+					}
+					$('#goodsSearch'+btn).val('');
+					$('#goodsSearch'+btn).focus();
+					//상태에 따른 알림창을 모두 보여주기 위해 return false를 맨밑에 넣어준다.
+					return false;
+				}
+
+				/////////////////////동일한 상품이 존재하면 안됨.//////////////////////
+				
+				$('#goodsSearch'+btn).val('');//검색한 코드를 비우고 비교.
+				var size = $('#custPopup').children().size();//행의 사이즈 개수
+				console.log(size);
+				var step;
+				for (step = 1; step <= size; step++) {
+					var goodsCode = $('#goodsSearch'+step).val();//조회한 상품코드들이 담김
+				
+					console.log(goodsCode);
+					//행의 사이즈만큼 for문을 돌면서 만약 동일한 상품코드가 존재하면 해당 행의 input창 비워줌.
+					if(data[0].prdCd == goodsCode){
+						alert("동일한 상품코드가 존재합니다.");
+						$('#goodsSearch'+btn).val('');		//상품코드 비워주기
+						$('#goodsNameIn'+btn).val('');		//상품명 비워주기
+						$('#goodsCountIn'+btn).val('');		//매장재고 비워주기
+						$('#supplyIn'+btn).val('');			//판매수량 비워주기
+						$('#priceIn'+btn).val('');			//소비자가 비워주기
+						$('#saleCountIn'+btn).val('');		//판매금액 비워주기
+
+						document.getElementById('goodsSearch'+btn).readOnly = false;//값이 들어갈 시 수정 가능.
+						$('#goodsSearch'+btn).focus();		//상품코드 포커스
+						return false;
+						
+					}
+				}
+					$('#goodsSearch'+btn).val(''); 		//상품코드 비워준다
+					$('#goodsNameIn'+btn).val(''); 		//상품명 비워준다
+					$('#goodsCountIn'+btn).val('');  	//재고수량 비워준다
+					$('#pricehidden'+btn).val('');  	//재고수량 비워준다
+					
+					$('#goodsSearch'+btn).val(data[0].prdCd);	//상품코드
+					$('#goodsNameIn'+btn).val(data[0].prdNm); 	//상품명
+					$('#goodsCountIn'+btn).val(data[0].Qty);	//재고수량
+					$('#pricehidden'+btn).val(data[0].prdUpr);	//소비자가=>히든
+
+					$('#goods_Code').val('');//검색한 코드를 다른곳에 저장(비워주기).
+					
+					document.getElementById('goodsSearch'+btn).readOnly = true;//값이 들어갈 시 수정 불가능.
+				
+			}else if(data.length == 0){//결과값이 0개
+				console.log(data);
+				alert("검색값이 없습니다.");
+				goodsCode = document.getElementById('goodsSearch'+btn).value;//상단에 비워준 상품코드를 다시 넣어준다.
+				$('#searchStock').val(goodsCode);	//상품코드
+				$('#num').val(btn);					//버튼값
+				goodsPopup(goodsCode);//상품코드 팝업창 오픈
+			
+			}else{//결과값이 1개가 아니기 때문에 팝업창을 띄운다
+				console.log(data);
+				goodsCode = document.getElementById('goodsSearch'+btn).value;//상단에 비워준 상품코드를 다시 넣어준다.
+				$('#searchStock').val(goodsCode);	//상품코드
+				$('#num').val(btn);					//버튼값
+				goodsPopup(goodsCode);//상품코드 팝업창 오픈
+			
+			}
+		},
+		error: function(data){
+			console.log("에러입니다");
+			alert('조회할 수 없습니다.');
+		}
+	});
+}
+ 
+ //////////////////////////////-DB 포인트사용액 체크-//////////////////////////////////
+function checkPoint(){
+	var pointUse1 = $('#pointUse').val();		//포인트사용액
+	var pointUse = pointUse1.replace(/\,/g,'');	//포인트가능액 천단위 쉼표 자르기
+	var poinNum = Number(pointUse);
+	console.log(poinNum);
+	var custNo = $('#custInput').val();
+	
+	$.ajax({
+		url : 'checkPoint.me',
+		type : "post",
+		data : {"custNo" : custNo,
+				"poinNum" : poinNum},
+		success : function(data) {
+			console.log(data);
+			if (data == '1') {//포인트 사용액< 포인트 가능액
+				console.log('포인트 사용 가능 합니다.');
+			} else if (data == '2') {//포인트 사용액> 포인트 가능액
+				alert('포인트 가능액이 변경되어 사용 불가능합니다. 고객 재검색 후 등록해주세요.');
+				return false;
+			
+			}
+		},
+		error : function(data) {
+			console.log(data);
+		}
+	});
+}
+//////////////////////////////-DB 포인트사용액 체크end-//////////////////////////////////
+ 
+ //소비자가 계산
+function supply(e){
+	debugger;
+	var eventId = event.currentTarget.id;					//이벤트가 일어나는 인풋창의 아이디
+	var eventValue = event.currentTarget.value; 			//이벤트가 일어나는 인풋창의 밸류
+	const regex1 = /[^0-9]/g;
+	const eventNum = eventId.replace(regex1, "");
+	console.log(eventNum);
+    var pricehidden = document.querySelector('#pricehidden'+eventNum).value;	//소비자가
+    var priceIn = $('#priceIn'+eventNum);						//소비자가 합계 아이디
+    var goodsCountInValue = document.querySelector('#goodsCountIn'+eventNum).value;	//매장재고
+    
+	console.log(eventId);
+	console.log(eventValue);
+	console.log(eventNum);
+	console.log(pricehidden);
+	console.log(priceIn);
+	console.log("매장재고:"+goodsCountInValue);
+	
+	/////////////////////////판매수량은 매장재고보다 클 수 없다.//////////////////////
+	console.log((typeof goodsCountInValue));
+	console.log((typeof eventValue));
+	var goodsCountInValue1 = goodsCountInValue.replace(/\,/g,'');		//소비자가 천단위 쉼표 자르기
+	
+	var ev = Number(eventValue);
+	var g = Number(goodsCountInValue1);
+	console.log(typeof ev);
+	console.log(typeof g)
+	console.log(g < ev);
+	console.log(ev < g);
+	if(g < ev){//매장재고<판매수량
+		alert("판매수량은 매장재고보다 클 수 없습니다.");
+		$('#supplyIn'+eventNum).val(0);					//판매수량 비워주기
+		$('#priceIn'+eventNum).val('0');				//소비자가 0원으로 설정
+		$('#saleCountIn'+eventNum).val('0');			//판매금액 0원으로 설정
+		eventValue = 0;
+		$('#supplyIn'+eventNum).focus();				//판매수량 포커스
+	}
+	
+
+	var pricevalue = pricehidden.replace(/\,/g,'');		//소비자가 천단위 쉼표 자르기
+	//판매수량 숫자만 가능
+	/////////////////////////////판매수량=> 문자일 경우/////////////////
+	if(isNaN(eventValue)===true){
+		//판매수량 숫자만 가능(문자로 들어올경우)
+		var regex = /[^0-9]/g;									// 숫자가 아닌 문자열을 선택하는 정규식
+		var result = eventValue.replace(regex, "");				// 원래 문자열에서 숫자가 아닌 모든 문자열을 빈 문자로 변경
+		var supplyIn = $('#supplyIn'+eventNum).val(result);		//판매수량
+		var resultSum = result * pricevalue;					//소비자가 합계
+		
+		console.log(regex);
+		console.log(result);
+		console.log(supplyIn);
+		console.log(resultSum);
+		
+		const reSum2 = resultSum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ","); //,천단위 쉼표추가
+		console.log(reSum2);
+		$('#saleCountIn'+eventNum).val(reSum2);					//판매금액
+	}
+	
+	//////////////////////////판매수량=> 숫자일 경우////////////////////////////
+	if(isNaN(eventValue)===false){
+		var sum = eventValue * pricevalue;					//소비자가 합계
+		const reSum = sum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ","); //,천단위 쉼표추가
+		var saleCountIn = $('#saleCountIn'+eventNum).val(reSum);		//판매금액
+		var priceInSum = $('#priceIn'+eventNum).val(pricehidden);		//소비자가
+		console.log(reSum);
+		console.log(priceInSum);
+	}
+	
+	//////////////////////////판매수량이 없으면//////////////////////////
+	if(eventValue == ''){					
+		$('#priceIn'+eventNum).val('');			//소비자가 비워주기
+		$('#saleCountIn'+eventNum).val('');		//판매금액 비워주기
+	}
+	
+	//총 합계 계산
+	totalSum();
+	
+};
+//판매수량
+function supplyOninput(supply) {
+	//숫자만 입력가능
+	supply.value = supply.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');
+	//왼쪽에 0이 들어올 시 비워준다.
+	supply.value = supply.value.replace(/(^0+)/, "");
+}
+
+
+//총합계 계산
+function totalSum(){
+	////////////////////////총 판매수량//////////////////////////////
+	var count;
+	var supplySum = 0; //판매수량 합계를 담음.
+	var trLength = document.getElementsByTagName('tr').length;
+	var countLength = trLength-2;//tr길이 만큼 반복
+	
+	console.log((typeof supplySum));
+	for (count = 1; count <= countLength; count++) {	//countLength:tr길이 만큼 반복
+		console.log(count);
+		var supply = $('#supplyIn'+count).val();	//모든 판매수량이 담김
+		console.log((typeof supply));
+		var a = Number(supply);    		  //숫자형변환
+		supplySum = Number(supplySum);    //숫자형변환
+		supplySum += a;					  //모든 판매수량 더하기
+
+		console.log((typeof supplySum));
+	}
+	console.log(supplySum);
+	$('#supplySumIn').val(supplySum);
+	
+	////////////////////////총 판매금액///////////////////////////////////
+	var i;
+	var moneySum = 0; //판매금액 합계를 담음.
+	console.log((typeof moneySum));
+	$('.goodsUqIn:last').val();
+
+	debugger;
+	var size = $('#custPopup').children().size();//행의 사이즈 개수
+	
+	console.log($('.goodsUqIn:last').val());
+	for (i = 1; i <= size; i++) {	//countLength:tr사이즈
+		console.log(i);
+		var supply = $('#saleCountIn'+i).val();	//모든 판매금액이 담김
+		var supplyRe = supply.replace(/\,/g,'');		//천단위 쉼표 자르기
+		console.log((typeof supplyRe));
+		var a = Number(supplyRe);    //숫자형변환
+		moneySum = Number(moneySum);    //숫자형변환
+		moneySum += a;
+
+		console.log((typeof moneySum));
+	}
+	console.log(moneySum);
+	const reMoneySum = moneySum.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ","); //,천단위 쉼표추가
+	$('#saleCountSumIn').val(reMoneySum);
+	
+};
+
+//////////////////////////////////////+누를 시////////////////////////////////////////
+var baseCamp = 0;
+function plus(){
+	var tbody = document.getElementById("custPopup");   // tbody 아이디를 가져와 객체 생성
+	var newRow = tbody.insertRow(tbody.rows.length);    // 맨아래에 새로운 로우 생성
+
+	var goodsUqIn = $('#goodsUqIn').val();
+
+	
+    var trLength = document.getElementsByTagName('tr').length;
+
+    console.log(trLength)
+    
+    if(baseCamp != 0){
+   	 trLength = baseCamp;
+    }
+	
+   // td 개수만큼 cell 을 생성하고 text를 넣어서 생성된 newRow에 insert 한다.
+     var newCell_0 = newRow.insertCell(0);
+     newCell_0.innerHTML = "<td><input class='searchPopupInput' id='shopCheck' type='checkbox' name='shopCheck' value="+ (trLength-2) +" readonly></td>";
+     newCell_0.classList.add('goodscheckCon');
+     var newCell_1 = newRow.insertCell(1);
+     newCell_1.innerHTML = "<td><input class='goodsUqIn' id='goodsSEQ"+(trLength-2)+"' type='text' value="+ (trLength-2) +" readonly></td>";
+     newCell_1.classList.add('goodsUqNumCon');
+     var newCell_2 = newRow.insertCell(2);
+     newCell_2.innerHTML = "<td><input class='goodsSe' name='PRD_CD' id='goodsSearch"+(trLength-2)+"'><button type='button' id='goods_but_sale' value="+ (trLength-2) +" onclick='goods_but(this)'><img class='total_search' src='resources/cust_in/search.png'></button></td>";
+     newCell_2.classList.add('goodsNumCon');
+     var newCell_3 = newRow.insertCell(3);
+     newCell_3.innerHTML = "<td id='goodsNameId'><input class='goodsNa' id='goodsNameIn"+(trLength-2)+"' readonly></td>";
+     newCell_3.classList.add('goodsNameCon');
+     var newCell_4 = newRow.insertCell(4);
+     newCell_4.innerHTML = "<td id='goodsCountId'><input class='goodsCo' name='IVCO_QTY' id='goodsCountIn"+(trLength-2)+"' readonly></td>";
+     newCell_4.classList.add('goodsCountCon');
+     var newCell_5 = newRow.insertCell(5);
+     newCell_5.innerHTML = "<td id='supplyId'><input class='supplyClass' name='SAL_QTY' id='supplyIn"+(trLength-2)+"' onkeyup='supply(this);' oninput='supplyOninput(this)'></td>";
+     newCell_5.classList.add('supplyCon');
+     var newCell_6 = newRow.insertCell(6);
+     newCell_6.innerHTML = "<td id='priceId'><input class='priceClass' name='PRD_CSMR_UPR' id='priceIn"+(trLength-2)+"' readonly></td>";
+     newCell_6.classList.add('priceCon');
+     var newCell_7 = newRow.insertCell(7);
+     newCell_7.innerHTML = "<td id='saleCountId'><input class='saleClass' name='SAL_AMT' id='saleCountIn"+(trLength-2)+"' readonly></td>";
+     newCell_7.classList.add('saleCountCon');
+     var newCell_8 = newRow.insertCell(8);
+//      판매수량 소비자가(1개값)
+     newCell_8.innerHTML = "<td><input type='hidden' class='hiddenpriceCon' id='pricehidden"+(trLength-2)+"'></td>";
+     newCell_8.classList.add('hiddenClass');
+
+     var html = "";
+     html = html;
+}
+
+//////////////////////////////////////+누를 시end////////////////////////////////////////
+
+// 삭제하기
+function minus(idx){	
+	debugger;
+	
+	//체크박스 선택 안할 시	
+	var sumit =$('.searchPopupInput').is(':checked');
+
+	if(!sumit) {
+		alert("제외할 상품을 선택해주세요.");
+		return false;
+	}
+	
+	//체크박스 행 지우기	
+	var checkRow = $("[name='shopCheck']:checked");
+	for(var i = checkRow.length-1; i >-1;i--){
+		checkRow.eq(i).closest('tr').remove();
+	}
+
+	//삭제시 번호 재정렬
+	var size = $('#custPopup').children().size();//행의 사이즈 개수
+	for(var i=0; i<size; i++){ //tr번호메기기
+		$(".goodscheckCon:eq("+i+") input").val(i+1);//체크박스
+		$(".goodsUqNumCon:eq("+i+") input").val(i+1);//번호
+		$(".goodsUqNumCon:eq("+i+") input").attr("id", "goodsSEQ"+(i+1));//상품코드 아이디
+		$(".goodsNumCon:eq("+i+") input").attr("id", "goodsSearch"+(i+1));//상품코드 아이디
+		$(".goodsNumCon:eq("+i+") button").val(i+1);//상품코드 검색버튼
+		$(".goodsNameCon:eq("+i+") input").attr("id", "goodsNameIn"+(i+1));//상품명 아이디
+		$(".goodsCountCon:eq("+i+") input").attr("id", "goodsCountIn"+(i+1));//판매재고 아이디
+		$(".supplyCon:eq("+i+") input").attr("id", "supplyIn"+(i+1));//판매수량 아이디
+		$(".priceCon:eq("+i+") input").attr("id", "priceIn"+(i+1));//소비자가 아이디
+		$(".saleCountCon:eq("+i+") input").attr("id", "saleCountIn"+(i+1));//판매금액 아이디
+		$(".hiddenClass:eq("+i+") input").attr("id", "pricehidden"+(i+1));//소비자가 히든 아이디
+	}
+	
+	//모든행이 비워졌을 때 1행을 생성한다.
+	if(size == ''){
+		plus();
+	}
+	
+	//총 합계 계산
+	totalSum();
+	
+}

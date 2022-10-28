@@ -1,0 +1,569 @@
+@charset "UTF-8";
+
+/* body여백 없애기 */
+body{
+	margin: 0;
+	padding: 0;
+}
+.star{
+	display: table-cell;
+	vertical-align: middle;
+	font-size: 21px;
+	color: #D5D5D5;
+	padding: 5px;
+}
+.starBox{
+	border-radius: 5px;
+	border: 1px solid;
+	margin-left: 5px;
+	width: 20px;
+	height: 20px;
+	display: inline;
+	font-size: 23px;
+	color: #D5D5D5;
+}
+.Title{
+	font-size: 20px;
+}
+.Refresh{
+	filter: opacity(0.5) drop-shadow(0 0 0 #B8C6CC);
+	width: 20px;
+	height: 20px;
+}
+.Wrap{
+	margin-left: 190px;
+	position: relative;
+	padding: 85px 85px 50px 85px;
+}
+/* 상단검색박스 */
+.SearchBox{
+	border-radius: 30px;
+	padding: 41px 40px 0;
+	width: 1100px;
+	margin: auto;
+	height: 120px;
+	background-color: #F6F6F6;
+	margin-top: 30px;
+}
+#Search_but_sale{
+    position: absolute;
+    left: 359px;
+    background-color: #3E76D6;
+    border-style: none;
+    width: 31px;
+    height: 28px;
+    margin-top: 2px;
+}
+#Search_but_sale:hover{
+	cursor: pointer;
+}
+#Search_but_num {
+    position: absolute;
+    left: 892px;
+    background-color: #3E76D6;
+    border-style: none;
+    width: 31px;
+    height: 28px;
+    margin-top: 2px;
+}
+#Search_but_num:hover{
+	cursor: pointer;
+}
+.Text_space{
+	margin-right: 50px;
+}
+.essential{
+	color: red;
+	font-weight: 700;
+}
+.Text_box{
+	height: 25px;
+	width: 130px;
+	border: 1px solid #BDBDBD;
+	background-color: white;
+}
+.Text_date{
+	height: 25px;
+	width: 90px;
+	border: 1px solid #BDBDBD;
+	background-color: white;
+}
+#wrap_s{
+	margin-left: 122px;
+}
+#sale{
+	margin-left: 12px;
+}
+#saleCode{
+	background-color: #BDBDBD;
+}
+/* 검색버튼 */
+#Search_but{
+	width: 50px;
+	height: 50px;
+	float: right;
+	background-color: #3E76D6;
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#TotalSearch_but_id{
+	width: 50px;
+	height: 50px;
+	float: right;
+	background-color: #3E76D6;
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+}
+.total_search{
+	filter: brightness(0) invert(1);
+	width: 30px;
+	height: 21px;
+	margin: 2px -4px;
+}
+.wrap_mg{
+	padding: 0 30px;
+}
+.radio_check{
+	vertical-align: text-top;
+	width: 20px;
+	height: 20px;
+}
+.Text_space_s{
+	margin-right: 10px;
+}
+tbody{
+	overflow:auto;
+}
+.Text_box{
+	outline: none;
+}
+/* 매장조회 팝업창 */
+#light_shop{
+	text-align: center;
+	margin: 0 auto; 
+	font-size: 14px;
+}
+.CustCheck_Wrap_shop{
+	height: 65px;
+    background: #F6F6F6;
+    padding: 15px;
+}
+.white_content_shop {
+    width: 750px;
+    height: 472px;
+    padding: 16px;
+    background-color: white;
+}
+/* 고객조회팝업창 */
+.black_overlay {
+    position: absolute;
+    top: 0%;
+    left: -20%;
+    width: 120%;
+    height: 224%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1001;
+    -moz-opacity: 0.8;
+    opacity: .80;
+    filter: alpha(opacity=80);
+}
+.white_content {
+    top: 45%;
+    left: 15%;
+    padding: 16px;
+    background-color: white;
+    z-index: 1002;
+    overflow: auto;
+    border-radius: 1.5rem;
+}
+#light{
+	text-align: center;
+	margin: 0 auto; 
+	font-size: 14px;
+}
+.popupBut{
+    border-style: none;
+    border-radius: 6px;
+    margin: 10px;
+    width: 150px;
+    height: 40px;
+}
+.popupBut:hover{
+	cursor: pointer;
+	background-color: black;
+	color: white;
+}
+.CustCheck_Info{
+	width: 190px;
+    height: 34px;
+    border: 1px solid #A6A6A6;
+}
+.CustCheck_Wrap{
+	height: 65px;
+    background: #F6F6F6;
+    padding: 15px;
+}
+.Cust_popup_table{
+    border: 1px solid gray;
+    border-collapse: collapse;
+    width: 100%;
+    display: block;
+    height: 14rem;
+}
+.goodsNum{
+	font-size: 14px;
+	width: 133px;
+}
+.goodsUqNum{
+    width: 60px;
+    font-size: 14px;
+}
+.Btnwrap {
+    margin-top: 77px;
+}
+.tax{
+    width: 68px;
+}
+.taxSum{
+	width: 68px;
+    text-align: end;
+}
+.saleCountSum{
+	width: 152px;
+    text-align: end;
+}
+.goodsUqNumCon {
+	text-align: center;
+    width: 58px;
+}
+.goodsNumCon {
+    width: 127px;
+}
+.goodsNameCon {
+    width: 115px;
+}
+.goodsCountCon {
+    text-align: end;
+    width: 74px;
+}
+.supplyCon {
+    text-align: end;
+    width: 134px;
+}
+.taxCon {
+    text-align: end;
+    width: 66px;
+}
+.saleCountCon {
+    text-align: end;
+}
+.goodsCountSum{
+	width: 78px;
+	text-align: end;
+}
+.supplySum{
+	width: 141px;
+    text-align: end;
+}
+.goodsSum{
+    background-color: #3E76D6;
+    color: white;
+    width: 479px;
+    text-align: center;
+}
+#Cust_Num{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 87px;
+}
+#Cust_Nm{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 205px;
+}
+#Cust_Count{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 87px;
+}
+#Cust_Sum{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 87px;
+}
+#Cust_Cash{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 87px;
+}
+#Cust_Card{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 87px;
+}
+
+#Cust_Pin{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 68px;
+}
+#Cust_Sale_No{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 73px;
+}
+#Cust_Sale_Nm{
+	border: none;
+    background-color: #F6F6F6;
+    font-size: 15px;
+    width: 210px;
+}
+#tfootSum{
+    font-size: 14px;
+}
+.goodsNa{
+	border: none;
+}
+#salRtn_Btn{
+display: inline-block;
+}
+/* 고객변경이력조회 */
+.Cust_popup_table thead {
+    table-layout: fixed;
+    display: block;
+    width: 100%;
+    height: 32px;
+}
+.Cust_popup_table tbody {
+	width: 100%;
+	display: block;
+    height: 190px;
+}
+.Cust_popup_table_pop{
+/* 	display: block; */
+    border: 1px solid gray;
+	height: 250px;
+/*     width: 760px; */
+/*     order-collapse: collapse; */
+    border-collapse: collapse;
+/*     overflow-y: scroll; */
+}
+.Cust_popup_table_pop th{
+	height: 30px;
+}
+.CustCheck_Wrap_pop{
+	margin-top: 42px;
+	height: 65px;
+    background: #F6F6F6;
+    padding: 15px;
+}
+.changeCustPhone_Before{
+	width: 107px;
+}
+.changeCustPhone_After{
+	width: 107px;
+}
+.changeMember {
+    width: 107px;
+}
+.black_overlay_pop {
+	display: none;
+    position: absolute;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1001;
+    -moz-opacity: 0.8;
+    opacity: .80;
+    filter: alpha(opacity=80);
+}
+#light_pop{
+	text-align: center;
+	margin: 0 auto; 
+	font-size: 14px;
+}
+.white_content_pop {
+	display: none;
+    position: absolute;
+    top: 20%;
+    left: 32%;
+    width: 750px;
+    height: 472px;
+    padding: 16px;
+    border: 1px solid #BDBDBD;
+    background-color: white;
+    z-index: 1002;
+    overflow: auto;
+    border-radius: 1.5rem;
+}
+.changeCustPhone_Text{
+	width: 90px;
+}
+/* 신규버튼 */
+.new_registration {
+    width: 100px;
+    height: 30px;
+    margin-left: 1360px;
+    border-style: none;
+    border-radius: 5px;
+}
+.new_registration:hover{
+	cursor: pointer;
+	background-color: #3E76D6;
+	color: white;
+}
+#date{
+	width: 90px;
+}
+/* 스크롤 */
+.CustTable{
+/* 	display: block; */
+    border: 1px solid gray;
+    width: 1185px;
+    margin-left: 275px;
+    border-collapse: collapse;
+/*     overflow-y: scroll; */
+}
+thead {
+    table-layout: fixed;
+    display: block;
+    width: 100%;
+    height: 35px;
+}
+
+table thead tr {
+/* 	display:table; */
+    table-layout:fixed;
+    width:100%;
+}
+
+.CustTable tbody {
+	width: 100%;
+	display: block;
+    height: 18rem;
+}
+tbody{
+	overflow:auto;
+}
+tbody tr {
+    width: 100%;
+	display: table;
+    table-layout: fixed;
+}
+table thead th{
+	position: sticky;
+    top: 0px;
+    background-color: #3E76D6 !important;
+    color: white;
+}
+th, td {
+	border: 1px solid #444444;
+}
+.goodsName{
+	width: 120px;
+	font-size: 14px;
+}
+.goodsCount{
+	text-align: center;
+    width: 77px;
+    font-size: 14px;
+}
+.Change_details{
+	float: right;
+    margin-right: 10px;
+}
+.supply{
+    text-align: center;
+    width: 140px;
+	font-size: 14px;
+}
+.saleCount{
+	width: 150px;
+}
+.joinDate{
+	text-align: center;
+    width: 110px;
+}
+.SaleInfo{
+	width: 110px;
+}
+.Cust{
+	height: 23px;
+	width: 140px;
+}
+.Modified_date{
+	text-align: center;
+/* 	width: 150px; */
+}
+
+.main {
+	padding-top:34px;
+}
+.box {
+	width: 600px;
+	height: 150px;
+	overflow-y: scroll;
+}
+tr.title {
+	margin: -33px 0px 0px -1px;
+	width: 600px;
+	display: table;
+	position: absolute;
+	background-color: #5dcafc;
+}
+th, td {
+	padding: 6px;
+}
+table{
+	font-size: 15px;
+}
+tbody {
+	font-size: 13px;
+}
+#custInput{
+	background-color: #BDBDBD;
+}
+#TotalSearch_but_id{
+	width: 50px;
+	height: 50px;
+	float: right;
+	background-color: #3E76D6;
+	border: none;
+	border-radius: 10px;
+	cursor: pointer;
+}
+#reload{
+	background-color: white;
+	border: none;
+}
+.Cust_popup_table_pop{
+/* 	display: block; */
+    border: 1px solid gray;
+	height: 250px;
+    border-collapse: collapse;
+}
+#changeCust{
+	margin-top: 8px;
+	width: 100%;
+    display: block;
+    height: 13rem;
+}
+.Cust_popup_table_pop{
+	width: 100%;
+    height: 14rem;
+}
+.changeCustNum{
+	width: 110px;
+}

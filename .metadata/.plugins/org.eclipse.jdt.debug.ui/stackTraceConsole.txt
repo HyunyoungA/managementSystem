@@ -1,0 +1,6 @@
+try {
+			System.out.println("joinForm:"+joinForm);
+			response.getWriter().print(joinForm);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}

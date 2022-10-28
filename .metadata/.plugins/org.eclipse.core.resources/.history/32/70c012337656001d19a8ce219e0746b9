@@ -1,0 +1,764 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>고객판매수금 등록</title>
+<script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js" ></script>
+<link href="resources/CSS/Collect_Bill.css" rel="stylesheet">
+</head>
+<body>
+<div class="white_content">
+	<input type="hidden" id="goodsCodeName">				<!-- 세션 매장코드 -->
+	<input type="hidden" id="sale_Nm">						<!-- 세션 매장명 -->
+	<input type="hidden" id="sale_Code" name="PRT_CD">		<!-- 세션 매장코드 -->
+	<input type="hidden" id="loginNm" name="LST_UPD_ID">	<!-- 세션 아이디 -->
+	<input type="hidden" id="cardYearDate">					<!-- 카드유효년YYYY값 비교할 값(올해 년도의 값이 담겨있음.) -->
+	<input type="hidden" id="cardMonDate">					<!-- 카드유효년MM값 비교할 값(현재 월의 값이 담겨있음.) -->
+	<input type="hidden" id="cardNumFull">					<!-- 카드번호1-4 합침 -->
+	<input type="hidden" id="PNT">							<!-- 포인트:(카드결제금액+현금결제금액)*0.1 : 적립 -->
+	<input type="hidden" id="checkShop">					<!-- 사용x -->
+	<input type="hidden" id="searchStock">					<!-- 자동완성X 팝업창 띄울때 보내는 검색어값 -->
+	<input type="hidden" id="num">							<!-- 자동완성X 팝업창 띄울때 보내는 버튼값 -->
+	
+		<h3 style="text-align: center;">고객판매수금 등록</h3>
+		<div class="CustCheck_Wrap">
+			<span class="es">*</span>
+			<span class="Text_space_s">판매일자</span>
+			<input type="date" class="sale_Date" id="currentDate" name="SAL_DT" style="width: 100px;" readonly>
+			<span  class="es" style="margin-left: 183px;">*</span>
+			<span class="Text_space_s">판매구분</span>
+			<select class="sale_Date" id="sale" name="SAL_TP_CD" style="width: 100px;" disabled="disabled">
+				<!-- 공통테이블 가져오기 판매, 반품 -->
+				<c:forEach items="${list}" var="C">
+					<c:if test="${C.CODE_CD eq 'SAL_TP_CD'}">
+						<c:choose>
+						<c:when test="${C.DTL_CD_NM eq '판매'}">
+						 	<option value="${C.DTL_CD}" selected>${C.DTL_CD_NM}</option>
+						</c:when>
+						<c:otherwise>
+							<option value="${C.DTL_CD}" >${C.DTL_CD_NM}</option>
+						</c:otherwise>
+						</c:choose>
+					</c:if>
+				</c:forEach>
+			</select><br><br>
+			
+			<!-- 고객번호 검색 -->
+			<div>
+				<span class="es">*</span>
+				<span class="Text_space_s">고객번호</span>
+				<input class="Text_box" id="custInput" name="CUST_NO" readonly>
+				<!-- 고객번호 검색 버튼 -->
+				<button type="button" id="Search_but_sale" onclick="Search_but_num()">
+					<img class="total_search" src="resources/cust_in/search.png">
+				</button>
+				<!-- 고객번호 검색 버튼 end-->
+				<input class="Text_box" id="custNum" name="CUST_NM" onclick="reSearch()" autofocus>
+			</div>
+			<!-- 고객번호 검색 end -->
+			
+		</div>
+		<!-- 결제금액 내용 -->
+		<p>결제금액</p>
+		<div class="CustCheck_Wrap">
+			<span class="Text_space_s">현금</span>
+			<input class="sale_Date_Bill" id="cash" name="CSH_STLM_AMT" style="width: 100px; margin-left: 27px;"
+			oninput="this.value = this.value.replace(/^0+|\D+/g, '').replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');">
+			
+			<span class="Text_space_s" style="margin-left: 65px;">카드금액</span>
+			<input class="sale_Date_Bill" id="cardCount" name="CRD_STLM_AMT" style="width: 100px;"
+			oninput="this.value = this.value.replace(/^0+|\D+/g, '').replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');">
+			
+			<span class="Text_space_s" style="margin-left: 65px;">포인트 사용액</span>
+			<input class="sale_Date_Bill" id="pointUse" name="PNT_STLM_AMT" style="width: 100px;"
+			 oninput="this.value = this.value.replace(/^0+|\D+/g, '').replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');">
+			 <br>
+			
+			<span class="Text_space_s">유효일자</span>
+			<input class="sale_Date_Bill" id="effectDate" name="VLD_YM" style="width: 100px;" maxlength="6" placeholder="MMYYYY"
+			oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');">
+			
+			<span class="Text_space_s" style="margin-left: 65px;">카드회사</span>
+			<select class="sale_Date_Bill" id="cardCompany" name="CRD_CO_CD" style="width: 106px; height: 25px;">
+				
+				<option value="" selected>선택하세요</option>
+				<!-- 공통테이블 가져오기 카드회사 -->
+				<c:forEach items="${list}" var="C">
+					<c:if test="${C.CODE_CD eq 'CRD_CO_CD'}">
+						 <option value="${C.DTL_CD}">${C.DTL_CD_NM}</option>
+					</c:if>
+				</c:forEach>
+				
+			</select>
+			<span class="Text_space_s" style="margin-left: 65px;">포인트 가능액</span>
+			<input class="sale_Date_Bill" name="AVB_PNT" id="pointPossible" readonly><br>
+			
+			<span class="Text_space_s">카드번호</span>
+			<input class="card" id="card1" maxlength="4" 
+			oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');">
+			<input class="card" id="card2" maxlength="4"
+			oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');">
+			<input class="card" id="card3" maxlength="4"
+			oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');">
+			<input class="card" id="card4" maxlength="4"
+			oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');">
+		</div>
+		<!-- 결제금액 내용end -->
+		<div id="btnWrap">
+		<button type="button" class="plus" onclick="plus()">+</button>
+		<button type="button" class="minus" onclick="minus()">-</button>
+		</div>
+		<table class="Cust_popup_table" id="custTb">
+			<thead>
+		    	<tr>
+		    		<th class="goodscheck">선택</th>
+		    		<th class="goodsUqNum">번호</th>
+		        	<th class="goodsNum">상품코드</th>
+		            <th class="goodsName">상품명</th>
+		            <th class="goodsCount">매장재고</th>
+		            <th class="supply">판매수량</th>
+		            <th class="tax">소비자가</th>
+		            <th class="saleCount">판매금액</th>
+		        </tr>
+		    </thead>
+			<tbody id="custPopup">
+				<tr>
+		    		<td class="goodscheckCon">
+		    			<input class='searchPopupInput' id='shopCheck' type='checkbox' name='shopCheck' value="1">
+		    		</td>
+		    		<td class="goodsUqNumCon">
+		    			<input class='goodsUqIn' value="1" readonly>
+		    		</td>
+		        	<td class="goodsNumCon">
+		        		<input id="goodsSearch1" class="goodsSe" name="PRD_CD" value="">
+		        		<!-- 상품코드 검색 버튼 -->
+						<button type="button" id="goods_but_sale" value="1" onclick="goods_but(this)">
+							<img class="total_search" src="resources/cust_in/search.png">
+						</button>
+						<!-- 상품코드 검색 버튼 end-->
+		        	</td>
+		            <td class="goodsNameCon" id="goodsNameId">
+		            	<input id="goodsNameIn1" class="goodsNa" readonly>
+		            </td>
+		            <td class="goodsCountCon" id="goodsCountId">
+		            	<input id="goodsCountIn1" class="goodsCo" name="IVCO_QTY" readonly>
+		            </td>
+		            <td class="supplyCon" id="supplyId"><!-- 판매수량 -->
+		            	<input id="supplyIn1" name="SAL_QTY" class="supplyClass" onkeyup="supply(this);"
+		            	oninput="supplyOninput(this)">
+		            </td>
+		            <td class="priceCon" id="priceId"><!--  소비자가-->
+		            	<input class="priceClass" name="PRD_CSMR_UPR" id="priceIn1" readonly>
+		            </td>
+		            <td class="saleCountCon" id="saleCountId"><!-- 판매금액 -->
+		            	<input id="saleCountIn1" name="SAL_AMT" class="saleClass" readonly>
+		            </td>
+		            <td class="hiddenClass">
+		            	<input type="hidden" class='hiddenpriceCon' id='pricehidden1'><!-- 판매수량 소비자가(1개값)-->
+		            </td>
+		        </tr>
+			</tbody>
+			<tfoot>
+		    	<tr>
+		    		<th class="goodsSum">합계</th>
+		            <th class="goodsCountSum">판매수량</th>
+		            <th class="supplySum">
+		            	<input id="supplySumIn" name="TOT_SAL_QTY" readonly>
+		            </th>
+		            <th class="taxSum">판매금액</th>
+		            <th class="saleCountSum">
+		            	<input id="saleCountSumIn" name="TOT_SAL_AMT" readonly>
+		            </th>
+		        </tr>
+			</tfoot>
+		</table>
+		<div class="Btnwrap" style="text-align: center;">
+			<button type="button" class="popupBut" onclick="window.close();">
+			닫기
+			</button>
+			<button type="button" class="popupBut" onclick="custPopUpsumit();">
+			저장
+			</button>
+		</div>
+</div>
+</body>
+<script type="text/javascript">
+
+//오늘날짜
+//한국시간을 맞추기 위한 -32400000
+const offset = new Date().getTimezoneOffset() * 60000;
+//현재 날짜 시간 - 9시간(UTC시간을 기준이 우리나라보다 9시간 많음.)
+const today = new Date(Date.now() -offset);
+
+document.getElementById('currentDate').value = new Date(Date.now() -offset).toISOString().substring(0, 10);
+
+document.getElementById('cardYearDate').value = new Date(Date.now() -offset).toISOString().substring(0, 4);
+console.log(new Date(Date.now() -offset).toISOString().substring(0, 4));
+document.getElementById('cardMonDate').value = new Date(Date.now() -offset).toISOString().substring(5, 7);
+console.log(new Date(Date.now() -offset).toISOString().substring(5, 7));
+
+$(document).ready(
+	$(opener).one('beforeunload', function() {                     // 부모창의 새로고침/닫기/앞으로/뒤로
+		window.close();                                    // 팝업을 닫는다
+	})
+);
+
+//팝업창 open 리스트 뿌리기
+$(document).ready(function() {
+	//부모창의 value =>자식창 팝업창에 넣음
+	//매장코드
+	document.getElementById('sale_Code').value = opener.$('#saleCode').val();
+	//세션아이디
+	document.getElementById('loginNm').value = opener.$('#loginNm').val();
+	console.log(document.getElementById('sale_Code').value);
+});	
+
+//고객조회 팝업창 - 체크박스 1개만 체크가능
+function custOnlyOne(element) {
+	const checkboxes = document.getElementsByName("custCheck");
+	  
+	checkboxes.forEach((cb) => {
+		cb.checked = false;
+	})
+	element.checked = true;
+}
+
+var custInput = $('#custInput').val();	//고객번호 검색결과
+var goodsNum = $('#goodsNum').val();	//고객번호
+
+//고객조건 입력란 지워지면 앞에 코드값도 지움 
+$("#custNum").keyup(function(event){              
+   if(event.keyCode == 8 || event.keyCode == 46) { //keyCode: 8(Backspace), keyCode: 46(Delete)       
+      if( $("#custNum").val() == "" ) {    
+         $("#custInput").val("");
+         $("#pointPossible").val("");//포인트사용액도 같이 지워준다.
+      } 
+   }
+});
+
+
+////////////////////////////////////////////저장버튼 클릭시 실행/////////////////////////////////////
+function custPopUpsumit(){
+	debugger;
+	
+	var custInput = $('#custInput').val();//고객번호
+	//고객선택 필수입력
+	if(custInput == ''){//고객번호비어있을 시 "등록할 고객을 선택해주세요."라는 알림창이 띄움.
+		alert("등록할 고객을 선택해주세요.");
+		$('#custNum').focus();
+		return false;
+	}
+	
+	//총판매수량과 총판매금액이 없을 시 저장안됨.
+	var supplySumIn = $('#supplySumIn').val();//총 판매 수량
+	
+	if(supplySumIn == '' || supplySumIn == 0){//총 판매 수량이 비어있을 시 "등록할 상품 또는 판매수량을 선택해주세요."라는 알림창이 띄움.
+		alert("등록할 상품 또는 판매수량을 선택해주세요.");
+		return false;
+	}
+	debugger;
+	var trSize = $('#custPopup').children().size()-1;//행의 사이즈 개수 => 합계행까지 포함이기 때문에 -1을 해준다.
+	console.log(trSize);//합계 행 제외
+	
+	var c = 0;
+	for(var i = 0; i <= trSize; i++){//for반복문 실행하면서 판매수량이 비어있거나 0일 시, "판매수량을 선택해주세요."라는 알림창을 띄운다. 
+		
+		c++;
+		var goodsSearch = $('#goodsSearch'+c).val();//상품코드
+		//상품코드가 있을 시 판매수량이 비어있을 수 없음.
+		if(goodsSearch != '' && $('#supplyIn'+c).val() == ''){//상품코드는 있지만, 판매수량이 비어있을 시
+			alert("판매수량을 선택해주세요.");
+			$('#supplyIn'+c).focus();
+			return false;
+		}else if(goodsSearch != '' && $('#supplyIn'+c).val() == 0){//상품코드는 있지만, 판매수량이 0일 시
+			alert("판매수량을 선택해주세요.");
+			$('#supplyIn'+c).focus();
+			return false;
+		}else if(goodsSearch == '' && $('#supplyIn'+c).val() == 0){//상품코드가 비어있고, 판매수량이 0일 시
+			$('#supplyIn'+c).val('');//판매수량만 0 일 시 비워준다.
+		}
+	}
+	
+	//현금+카드+포인트액 = 결제금액이 다를 때
+	var cash1 = $('#cash').val();						//현금
+	var cash = cash1.replace(/\,/g,'');					//현금 천단위 쉼표 자르기
+	
+	var cardCount1 = $('#cardCount').val();				//카드금액
+	var cardCount = cardCount1.replace(/\,/g,'');		//카드금액 천단위 쉼표 자르기
+	
+	var pointUse2 = $('#pointUse').val();				//포인트
+	var pointUse1 = pointUse2.replace(/\,/g,'');		//결제금액 천단위 쉼표 자르기
+	
+	var cashNum = Number(cash);							//숫자 형변환
+	var cardCountNum = Number(cardCount);				//숫자 형변환
+	var pointUse1Num = Number(pointUse1);				//숫자 형변환
+	var payment = cashNum+cardCountNum+pointUse1Num;	//현금+카드+포인트
+	
+	var paymentSum = $('#saleCountSumIn').val();		//결제금액
+	var paymentSumRe = paymentSum.replace(/\,/g,'');	//결제금액 천단위 쉼표 자르기
+	var paymentSumNum = Number(paymentSumRe);			//결제금액
+	
+	
+	console.log(cash+cardCount+pointUse1);
+	console.log(payment);
+	//카드+현금+포인트 합계와 총 판매금액이 맞는지 확인.
+	if(payment != paymentSumNum){
+		alert("결제금액과 판매금액이 맞지 않습니다.");
+		$('#cash').focus();
+		return false;
+	}
+	
+	//카드금액 입력 시 유효일자/카드회사/카드번호 필수입력
+	var cardCount = $('#cardCount').val();//카드금액
+	var effectDate = $('#effectDate').val();//유효일자
+	var cardCompany = $('#cardCompany').val();//카드회사
+	var card1 = $('#card1').val();//카드1
+	var card2 = $('#card2').val();//카드2
+	var card3 = $('#card3').val();//카드3
+	var card4 = $('#card4').val();//카드4
+	var Mon = effectDate.substring(0, 2);//월
+	var Year = effectDate.substring(2, 6);//년
+	var cardYearDateNum = $('#cardYearDate').val();//올해YYYY값
+	
+	
+	var pointPo_BE = $('#pointPossible').val();//포인트가능액
+	var pointPo = pointPo_BE.replace(/\,/g,'');//포인트가능액 천단위 쉼표 자르기
+	var pointUse9 = $('#pointUse').val();//포인트사용액
+	var pointUse = pointUse9.replace(/\,/g,'');//포인트가능액 천단위 쉼표 자르기
+	var cardNumFull = card1+card2+card3+card4;//히든으로 카드번호 함침
+	var cardMonDateNum = $('#cardMonDate').val();//현재 몇월달인지 값
+	console.log(cardMonDateNum);
+	$('#cardNumFull').val(cardNumFull);
+	console.log(cardNumFull);
+	console.log(Year);
+	
+	//카드금액 입력 시 유효일자/카드회사/카드번호 필수입력값
+	if(cardCount != ''){
+		if(effectDate == '' || effectDate.length != 6){//유효일자 6글자 제한
+			alert("유효일자 월/년 MMYYYY 6글자 입력해주세요.");
+			$('#effectDate').focus();
+			return false;
+		} 
+		if(cardCompany.trim() == ''){//카드회사 비어있을 시
+			alert("카드금액 입력 시, 카드회사 필수입력 입니다.");
+			$('#cardCompany').focus();
+			return false;
+		}else if(card1 == '' || card1.length != 4){//첫번째 카드번호 비어있을 시
+			alert("카드금액 입력 시, 카드번호 4자리 필수입력 입니다.");
+			$('#card1').focus();
+			return false;
+		}else if(card2 == '' || card2.length != 4){//두번째 카드번호 비어있을 시
+			alert("카드금액 입력 시, 카드번호 4자리 필수입력 입니다.");
+			$('#card2').focus();
+			return false;
+		}else if(card3 == '' || card3.length != 4){//세번째 카드번호 비어있을 시
+			alert("카드금액 입력 시, 카드번호 4자리 필수입력 입니다.");
+			$('#card3').focus();
+			return false;
+		}else if(card4 == '' || card4.length != 4){//네번째 카드번호 비어있을 시
+			alert("카드금액 입력 시, 카드번호 4자리 필수입력 입니다.");
+			$('#card4').focus();
+			return false;
+		}else if(Mon > 12){//유효날짜 12월 제한 =>유효일자-월
+			alert("유효 일자를 확인해주세요");
+			$('#effectDate').focus();
+			return false;
+		}else if(Year < cardYearDateNum){//Year: 유효년 입력날짜, cardYearDateNum: 올해 년도날짜
+			alert("유효 일자를 확인해주세요");//유효일자-년 =>올해보다 작을 경우
+			$('#effectDate').focus();
+			return false;
+		}else if(Year == cardYearDateNum && Mon < cardMonDateNum){//유효일자-년월 =>올해보다 작을 경우
+			alert("만료된 유효일자 입니다.");//올해 이번달보다 작은경우 cardMonDateNum: 현재 몇월달인지 값
+			$('#effectDate').focus();
+			return false;
+		}
+	}
+	
+	//포인트사용액은 포인트 가능액보다 작아야 한다.(문자열 안먹어서 숫자로 형변환)
+	var poinUseType = Number(pointUse);
+	console.log("포인트사용액");
+	console.log(poinUseType);
+	var pointPoType = Number(pointPo);
+	//사용액이 비어있지않을 시
+	if(poinUseType != ''){
+		if(poinUseType > pointPoType){
+			
+			console.log(poinUseType);
+			console.log(pointPoType);
+			console.log(poinUseType > pointPoType);
+			console.log(poinUseType == pointPoType);
+			
+			alert("포인트사용액은 포인트가능액보다 작아야 합니다.");
+			
+			$('#pointUse').focus();
+			return false;
+		}else if(poinUseType < 100){//포인트는 100점이상 사용가능합니다.
+			alert("포인트는 100점 이상 사용 가능합니다.");
+			$('#pointUse').focus();
+			return false;
+		}
+	}
+	
+	//등록버튼 안에 등록버튼 누를 시
+	var arr;
+	var arr2 = new Array();
+	var pointDt = new Array();//포인트DT
+	var pointMt;//포인트MT
+	if(confirm("고객판매수금 등록하시겠습니까?")){
+		
+		//포인트 사용액 DB체크
+		checkPoint();
+		
+		debugger;
+		//리스트
+		var trSize = $('#custPopup').children().size();			//행의 사이즈 개수
+		console.log(trSize);
+		
+		var saleCountSumIn1 = $('#saleCountSumIn').val();		//총판매금액
+		var saleCountSumIn = saleCountSumIn1.replace(/\,/g,'');	//천단위빼기
+				
+		var saleCountSumInNum = Number(saleCountSumIn); 		//총판매금액 숫자형변환
+		var TOT_VAT_AMT = saleCountSumInNum * 0.1;				//총 부가세액
+				
+		var TOT_VOS_AMT = saleCountSumInNum-TOT_VAT_AMT;		//총판매액-총부가세 = 공급가액
+		
+		//포인트 적립 시 포인트 사용액을 제외한 금액의 10%적립
+		var RSVG_PNT = (saleCountSumInNum-pointUse1Num)*0.1 	//포인트 적립액 = (총판매금액-사용포인트)*0.1
+		console.log(RSVG_PNT);
+
+		var pointPossible1 = $('#pointPossible').val();			//포인트 가능액
+		var pointPossible = pointPossible1.replace(/\,/g,'');	//포인트 천단위 쉼표 자르기
+		var pointPossibleNum = Number(pointPossible);			//포인트 가능액 형변환
+		
+		
+		var cash1 = $('#cash').val();							//현금 결제금액
+		var cash = cash1.replace(/\,/g,'');						//현금 천단위 쉼표 자르기
+		var cashNum = Number(cash);								//현금 형변환
+
+		var cardCount1 = $('#cardCount').val();					//카드 결제금액
+		var cardCount = cardCount1.replace(/\,/g,'');			//카드 천단위 쉼표 자르기
+		var cardCountNum = Number(cardCount);					//카드 형변환
+
+		//적립포인트:(카드결제금액+현금결제금액)*0.1
+		var PNT = (cardCountNum+cashNum)*0.1
+		
+		if(PNT == 0){
+			$('#PNT').val('');//포인트로만 결제했을 시 비워준다.
+		}else{
+			$('#PNT').val(PNT);//포인트로만 결제했을 시 pnt는 0으로 들어온다.
+		}
+		
+		console.log("포인트 사용액이 0인경우 비워준다.------------");
+		console.log(poinUseType);
+		
+		var pntList_DT;
+		//포인트 사용액이 있을 경우: 적립+사용
+		//적립포인트(현금또는 카드를 사용한 금액이 있을 시) 존재+사용포인트 존재
+		if((PNT != 0 || PNT != '')&&(poinUseType != 0 || poinUseType != '')){//poinUseType: 사용액
+			
+			//포인트 구매사용
+			pntList_DT = {
+				'PNT_DS_CD':"200",					//포인트구분코드 200:사용
+				'PNT_DS_DT_CD':"201",				//포인트구분상세코드 201:구매사용
+				'PNT':poinUseType,					//사용포인트
+				'fstUserId':$('#loginNm').val(),	//세션 이름
+				'CUST_NO':$('#custInput').val()		//고객번호
+			}
+			pointDt.push(pntList_DT);
+		
+			//포인트 구매적립
+			pntList_DT = {
+				'PNT_DS_CD':"100",					//포인트구분코드 100:적립
+				'PNT_DS_DT_CD':"101",				//포인트구분상세코드 101:구매적립
+				'PNT':PNT,							//적립포인트
+				'fstUserId':$('#loginNm').val(),	//세션 아이디
+				'CUST_NO':$('#custInput').val()		//고객번호
+			}
+			pointDt.push(pntList_DT);
+
+		//포인트 사용액이 0인경우:(적립)
+		}else if(poinUseType == 0 || poinUseType == ''){//적립포인트: PNT
+			poinUseType = '';						//포인트 사용액 0으로 들어가기때문에 비워준다.
+			pntList = {
+				'PNT_DS_CD':"100",					//포인트구분코드 100:적립
+				'PNT_DS_DT_CD':"101",				//포인트구분상세코드 101:구매적립
+				'PNT':PNT,							//적립포인트
+				'fstUserId':$('#loginNm').val(),	//세션 아이디
+				'CUST_NO':$('#custInput').val()		//고객번호
+			}
+			
+			pointDt.push(pntList);
+			
+		//포인트 사용액이 100% 결제인 경우:(사용)
+		}else if(PNT == 0 || PNT == ''){			//적립포인트가 0이거나 비어있는경우
+			//포인트 구매사용
+			pntList_DT = {
+				'PNT_DS_CD':"200",					//포인트구분코드 200:사용
+				'PNT_DS_DT_CD':"201",				//포인트구분상세코드 201:구매사용
+				'PNT':poinUseType,					//사용포인트
+				'fstUserId':$('#loginNm').val(),	//세션 아이디
+				'CUST_NO':$('#custInput').val()		//고객번호
+			}
+			pointDt.push(pntList_DT);
+		}
+		
+		//포인트MT CUST_NO, PNT_SEQ, fstUserId
+		if(poinUseType == 0 || poinUseType == ''){
+			poinUseType = 0;
+		}
+		pointMt = {
+			'fstUserId':$('#loginNm').val(),		//세션 아이디
+			'CUST_NO':$('#custInput').val(),		//고객번호
+			'PNT':PNT,								//적립포인트
+			'PNT_STLM_AMT':poinUseType,				//포인트 사용액
+			'PNT_DS':"SAL"							//포인트 구분
+		}
+		
+		//현금 사용액이 0인경우 비워준다.
+		if(cashNum == 0){
+			cashNum = '';
+		}
+		//카드 사용액이 0인경우 비워준다.
+		if(cardCountNum == 0){
+			cardCountNum = '';
+		}
+		
+		var c = 0;//id뒤에 붙는 번호.
+		var a = 0;
+		for(var i = 0; i < trSize; i++){
+			
+			c++;
+
+			var priceIn1 = $('#priceIn'+c).val();				//소비자가
+			var priceIn = priceIn1.replace(/\,/g,'');			//천단위빼기
+
+			var saleCountIn1 = $('#saleCountIn'+c).val();		//판매금액
+			var saleCountIn = saleCountIn1.replace(/\,/g,'');	//천단위빼기
+			
+			var saleCountInNum = Number(saleCountIn); 			//판매금액 숫자형변환
+			var SAL_VAT_AMT = saleCountInNum * 0.1;				//부가세액
+			var SAL_VOS_AMT = saleCountInNum-SAL_VAT_AMT;		//판매액-부가세 = 공급가액
+			
+			var supplyInNull = $('#supplyIn'+c).val();			//판매수량
+			//판매수량이 비어있지 않거나 0이 아닌 경우에만 담는다.
+			if(supplyInNull != '' || supplyInNull != 0){
+				
+				if(i == 0){
+					//판매MT들어갈 정보
+					arr={'PRT_CD':$('#sale_Code').val(),			//세션 매장코드
+						  'SAL_TP_CD':$('#sale').val(),				//판매구분
+						  'TOT_SAL_QTY':$('#supplySumIn').val(),	//총 판매수량
+						  'TOT_SAL_AMT':saleCountSumIn,				//총 판매금액
+						  'TOT_VAT_AMT':TOT_VAT_AMT,				//총 부가세액
+						  'TOT_VOS_AMT':TOT_VOS_AMT,				//총 공급가액
+						  'CSH_STLM_AMT':cashNum,					//현금 결제금액
+						  'CRD_STLM_AMT':cardCountNum,				//카드 결제금액
+						  'PNT_STLM_AMT':poinUseType,				//포인트 사용액
+						  'CUST_NO':$('#custInput').val(),			//고객번호
+						  'CRD_NO':$('#cardNumFull').val(),			//카드번호1-4 합침
+						  'VLD_YM':$('#effectDate').val(),			//유효일자
+						  'CRD_CO_CD':$('#cardCompany').val(),		//카드회사
+						  'LST_UPD_ID':$('#loginNm').val(),			//세션 이름
+					}
+						
+				}
+
+				arr2[a] ={'PRT_CD':$('#sale_Code').val(),			//세션 매장코드
+						  'SAL_TP_CD':$('#sale').val(),				//판매구분
+						  'PRD_CD':$('#goodsSearch'+c).val(),		//상품코드
+					      'SAL_QTY':$('#supplyIn'+c).val(),			//판매수량
+					      'PRD_CSMR_UPR':priceIn,					//소비자가
+					      'SAL_AMT':saleCountIn,					//판매금액
+				          'SAL_VAT_AMT':SAL_VAT_AMT,				//부가세액
+					      'SAL_VOS_AMT':SAL_VOS_AMT,				//공급가액
+					      'SEQ':a+1,								//시퀀스:인덱스 번호 사용
+					      'LST_UPD_ID':$('#loginNm').val(),			//세션 이름
+					      'CUST_NM':$('#custNum').val(),			//고객명
+					      'AVB_PNT':pointPossible,					//포인트 가능액
+					      'RSVG_PNT':RSVG_PNT,						//포인트 적립액
+				}
+				a++;
+			};
+		}
+
+		console.log(arr);
+		console.log(arr2);
+		console.log(JSON.stringify(arr2));
+		console.log(JSON.stringify(arr));
+		console.log(JSON.stringify(pointDt));
+		
+		//재고 DB체크
+		$.ajax({
+			url : 'stockCheck.me',
+			type : "post",
+			data : JSON.stringify(arr2),
+			dataType: 'json',
+			contentType: "application/json",
+			success : function(data) {
+				console.log(data);
+				if (data == '1') {//등록재고< 재고
+					console.log('재고등록 가능합니다.');
+				} else if (data == '2') {//등록재고> 재고
+					alert('재고가 부족합니다. 상품 재검색 후 등록해주세요.');
+					return false;
+				}
+			},
+			error : function(data) {
+				console.log(data);
+			}
+		});
+		
+		$.ajax({
+			url : 'collectBill.me',
+			type : 'post',
+		    data: {'salePay':JSON.stringify(arr),
+		    	   'payList':JSON.stringify(arr2),
+		    	   'pointDt':JSON.stringify(pointDt),
+		    	   'pointMt':JSON.stringify(pointMt)},
+			dataType: 'json',
+			success: function(data){
+				console.log(data);
+				if (data.collectBill == '1') {//등록 성공시 1이 반환됨.
+					alert("등록되었습니다.");//등록성공 안내메세지.
+					window.close();
+				}else{
+					alert("고객정보를 확인해주세요");
+				}
+			},
+			error: function(data) {
+				console.log(data);
+			}
+		});
+	//등록안할시
+	}else{
+		return false;
+	}
+	
+	
+};
+
+////////////////////////////////-고객번호 조회-////////////////////////////////////////
+//고객 엔터
+$("#custNum").keydown(function(event){               
+	if(event.keyCode == 13) {                            
+		Search_but_num();
+	}
+});
+
+//고객조건 입력란 지워지면 앞에 코드값도 지움
+$("#custNum").keyup(function(event){              
+	if(event.keyCode == 8 || event.keyCode == 46) {        
+	    if( $("#custNum").val() == "" ) {    
+	       $("#custInput").val("");    
+	    } 
+	}
+});
+
+//고객 재검색시 입력값 초기화
+function reSearch(){
+	debugger;
+	var cash = $('#cash').val();
+	var cardCount = $('#cardCount').val();
+	var pointUse = $('#pointUse').val();
+	var effectDate = $('#effectDate').val();
+	var cardCompany = $('#cardCompany').val();
+	var pointPossible = $('#pointPossible').val();
+	var card1 = $('#card1').val();
+	var card2 = $('#card2').val();
+	var card3 = $('#card3').val();
+	var card4 = $('#card4').val();
+	//입력된 값이 있을 시 "고객재검색시, 입력값 초기화됩니다."
+	if(cash != '' || cardCount != '' || pointUse != '' || effectDate != '' || cardCompany != '' ||
+	   card1 != '' || card2 != '' || card3 != '' || card4 != ''){// 입력된 값이 있는 경우
+		if(confirm("고객재검색시, 입력값 초기화됩니다.")){
+			window.location.reload();
+			
+		//취소버튼 클릭시
+		}else{
+			return false;
+		}
+	}
+}
+
+//고객번호 검색
+function Search_but_num(){
+	var custInput = $('#custInput').val();	//고객번호 검색결과
+	var custNum = $('#custNum').val();	//고객번호
+	var CheckCustName = $('#CheckCustName').val();	//팝업창 검색창 -고객명
+	var CheckCustName = $('#CheckCustPhone').val();	//팝업창 검색창 -고객 핸드폰번호
+	
+	//2글자 이상 입력하시오.
+	if(custNum.trim() == '' || custNum.trim().length == 1) {
+		alert('2글자 이상 입력하시오.');
+		$('#custNum').focus();
+		return false;
+	}
+
+	//2글자 이상 검색 시 실행
+	$.ajax({
+		url: 'custNum.me',
+		data: {"custNum":custNum},
+		type: 'post',
+		dataType: 'json', 
+		success: function(data){
+			console.log(data);
+			
+			if(data.length > 1) {//결과값이 1개가 아니기 때문에 팝업창을 띄운다
+				console.log(data);
+				console.log(custInput);
+				alert("검색값이 여러개 입니다.");
+				custPopup(custInput);//팝업창 오픈
+			}else if(data.length == 0) {//결과값이 없기 때문에 팝업창을 띄운다
+				console.log(data);
+				console.log(custInput);
+				alert("검색값이 존재하지않습니다.");
+				custPopup(custInput);//팝업창 오픈
+			}else{					
+				console.log(data);
+				$('#custNum').val(''); // 매장명 비우기
+	            $('#custNum').text('0'); // 글자 카운트 초기화
+				$('#custInput').val(data[0].CUST_NO);//결과값이 1개이기 때문에 자동완성으로 값이 들어간다.
+				$('#custNum').val(data[0].CUST_NM);
+				
+				var AVB_PNT_RE = data[0].AVB_PNT;
+				const AVB_PNT_AT = AVB_PNT_RE.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ","); //,천단위 쉼표추가
+			
+				$('#pointPossible').val(AVB_PNT_AT);
+			}
+		},
+		error: function(data){
+			console.log(data);
+			alert('조회할 수 없습니다.');
+		}
+		
+	});
+	
+};
+
+////////////////////////////////////-고객번호 조회end-////////////////////////////////////////
+
+////////////////////////////////////고객검색팝업창 띄우기/////////////////////////////////////////////
+var custNum = $('#custNum').val();	//매장명
+function custPopup(custNum) {
+	window.open("custSearchPopup.me", "c", "width=800px, height=480px, left=400, top=210");
+};
+////////////////////////////////////고객검색팝업창 띄우기end/////////////////////////////////////////////
+
+///////////////////////////////-매장재고조회 팝업창-///////////////////////////////////
+
+//매장재고조회 띄우기
+function goodsPopup(Collect_Bill) {
+	window.open("stock.me", "s", "width=840px, height=520px, left=400, top=150");
+};
+
+///////////////////////////////-매장재고조회 팝업창end-///////////////////////////////////
+
+
+
+
+</script>
+</html>

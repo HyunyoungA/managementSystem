@@ -1,0 +1,228 @@
+/**
+재고팝업창
+ * 
+ */
+ 
+console.log("재고팝업창 스트립트");
+
+$(document).ready(
+	$(opener).one('beforeunload', function() {             // 부모창의 새로고침/닫기/앞으로/뒤로
+		window.close();                                    // 팝업을 닫는다
+	})
+);
+
+var search = $('#checkShop').val();	//페이지 검색어
+var sale = $('#saleNum').val();	//매장코드
+
+//고객조회 팝업창 - 체크박스 1개만 체크가능
+function custOnlyOne(element) {
+	const checkboxes = document.getElementsByName("custCheck");
+	  
+	checkboxes.forEach((cb) => {
+		cb.checked = false;
+	})
+	element.checked = true;
+}
+
+//상품조회 팝업창 open 리스트 뿌리기
+$(document).ready(function() {
+	debugger;
+
+	//부모창의 검색어 =>자식창 팝업창에 넣음
+	document.getElementById('num').value = opener.$('#num').val();//번호
+	document.getElementById('goodsCodeName').value = opener.$('#searchStock').val();//부모창의 검색어
+	document.getElementById('saleNum').value = opener.$('#sale_Code').val();//세션매장코드
+
+	var checkShop = $('#checkShop').val();	//페이지 검색어
+	var saleNum = $('#saleNum').val();	//매장코드
+
+	//매장재고조회
+	goods_Stock();
+});
+
+//매장재고조회
+function goods_Stock(){
+	var checkShop = $('#goodsCodeName').val();	//페이지 검색어
+	var saleNum = $('#saleNum').val();			//매장코드
+	
+	$.ajax({
+		url: 'goods_stock.me',
+		data: {"checkShop":checkShop
+			 , "saleNum":saleNum},
+		type: 'post',
+		dataType: 'json',
+		success: function(data){
+			//테이블에 데이터 전달
+			console.log(data);
+			
+			let html = "";
+			if(data.length > 0) { 
+				$.each(data, function(index, item){
+					html += "<tr style='width: 100%;' onclick='checkClick(this)'>"; 
+					
+					if(item.prdSsCd == 'C'){//상품상태가 해지일 경우=>background-color: yellow;
+						html += "<td class='Check_Box_Con' style='text-align: center; background-color: yellow;'>"+"<input type='checkbox' name='custCheck' disabled value="+(item.prdSsCd)+" onclick='custOnlyOne(this)'>"+"</td>";
+						html += "<td class='goodsNumCon' style='background-color: yellow;'>"+item.prdCd+"</td>";
+						html += "<td class='goodsNameCon' style='background-color: yellow;'>"+item.prdNm+"</td>";
+						html += "<td class='stockCountCon' style='background-color: yellow;'>"+item.Qty+"</td>";
+						html += "<td class='custPriceCon' style='background-color: yellow;'>"+item.prdUpr+"</td>";
+					}else if(item.prdUpr == 0){//소비자단가가 0인 경우
+						html += "<td class='Check_Box_Con' style='text-align: center;'>"+"<input type='checkbox' name='custCheck' disabled value="+(item.prdSsCd)+" onclick='custOnlyOne(this)'>"+"</td>";
+						html += "<td class='goodsNumCon'>"+item.prdCd+"</td>";
+						html += "<td class='goodsNameCon'>"+item.prdNm+"</td>";
+						html += "<td class='stockCountCon'>"+item.Qty+"</td>";
+						html += "<td class='custPriceCon'>"+item.prdUpr+"</td>";
+					}else if(item.Qty == 0){//재고수량이 0인 경우
+						html += "<td class='Check_Box_Con' style='text-align: center;'>"+"<input type='checkbox' name='custCheck' disabled value="+(item.prdSsCd)+" onclick='custOnlyOne(this)'>"+"</td>";
+						html += "<td class='goodsNumCon'>"+item.prdCd+"</td>";
+						html += "<td class='goodsNameCon'>"+item.prdNm+"</td>";
+						html += "<td class='stockCountCon'>"+item.Qty+"</td>";
+						html += "<td class='custPriceCon'>"+item.prdUpr+"</td>";
+					}else {//상품상태가 해지가 아니고, 소비자가 0이 아니고, 재고수량 0이 아닌 경우
+						html += "<td class='Check_Box_Con' style='text-align: center;'>"+"<input type='checkbox' name='custCheck' value="+(item.prdSsCd)+" onclick='custOnlyOne(this)'>"+"</td>";
+						html += "<td class='goodsNumCon'>"+item.prdCd+"</td>";
+						html += "<td class='goodsNameCon'>"+item.prdNm+"</td>";
+						html += "<td class='stockCountCon'>"+item.Qty+"</td>";
+						html += "<td class='custPriceCon'>"+item.prdUpr+"</td>";
+					}
+					
+					html += "</tr>";
+				});
+			} else {
+					html += "<tr>";
+					html += "<td colspan='5' style='text-align: center;'>존재하지않는 상품입니다.</td>";
+					html += "</tr>";
+			}
+			$("tbody#custPopup").html(html);
+	    
+		},
+		error: function(data){
+			console.log(data);
+			alert('조회할 수 없습니다.');
+		}
+	})
+};
+
+//상품(코드+명) 팝업창 - 검색버튼클릭 시
+function checkCust(){
+	//상품(코드+명)의 인풋창의 값을 goods_Stock()에서 사용되는 변수에 담음.
+	var checkShop = $('#checkShop').val($('#goodsCodeName').val());//상품(코드+명)검색어 밸류
+	var saleNum = $('#saleNum').val();	//매장코드
+
+	//매장재고조회
+	goods_Stock();
+	
+};
+
+//매장조회 팝업창 안에 표 클릭시 이벤트
+function checkClick(e){
+	
+	//행 클릭 시 체크박스 체크
+	//console.log($(this).find('td:first-child :checkbox'));
+	//console.log(e.child);
+	var chkbox = $(this).find('td:first-child :checkbox');	//클릭이벤트가 일어난 행의 체크박스선택
+	var disabled = $(this).find('td:first-child :checkbox').prop("disabled"); //비활성화 여부 체크
+    
+	if(!disabled){ //비활성화가 아니라면
+    	$('input[type="checkbox"][name="custCheck"]').prop('checked',false);//다른 체크박스는 체크해지.
+    	chkbox.prop('checked', !chkbox.prop('checked'));//클릭이벤트가 일어난 행의 체크박스선택, 다른체크박스는 체크해지
+    }
+
+};
+
+//행 더블클릭 시 팝업창 닫히고 데이터 전달
+$("#custPopup").on('dblclick', 'tr', function(e){
+	debugger;
+	
+	var disabled = $(this).find('td:first-child :checkbox').prop("disabled");//더블클릭이 일어난 행에 체크박스 체크.(체크박스에 매장코드를 담아놓았음.)
+	console.log(disabled);
+	
+	//더블클릭한 행의 체크박스가 막혀있다면 = true이면,
+	if(disabled == true){//disabled가 true면,
+		return false;	//false를 반환해서 더블클릭막기
+	}
+
+	stock();//적용버튼 클릭시 실행
+});
+//적용버튼 클릭시 실행
+function stock(){
+	debugger;
+	
+	//체크박스의 값 전달
+	var items = $('input:checkbox[type=checkbox]:checked').map(function () {
+	    return this.value;
+	}).get();
+	
+	console.log(items[0]);
+	var custSumit = items[0];
+	
+	//체크박스 선택 안할 시 알림창
+	var submit = $("input:checkbox[name='custCheck']").is(":checked");
+	if(!submit) {
+		alert("상품을 선택해주세요.");
+		return false;
+	}
+	
+	goodsCode = $("input[name='custCheck']:checked").parent().parent().children().eq(1).text();
+	goodsName = $("input[name='custCheck']:checked").parent().parent().children().eq(2).text();
+	goodsCount = $("input[name='custCheck']:checked").parent().parent().children().eq(3).text();
+	goodsPrice = $("input[name='custCheck']:checked").parent().parent().children().eq(4).text();
+	debugger;
+	console.log(goodsCode);//상품코드
+	console.log(goodsName);//상품명
+	console.log(goodsCount);//재고수량
+	console.log(goodsPrice);//소비자가
+	num = $('#num').val();
+	
+	sameGoods();//동일한 상품이 존재 체크
+};
+
+function sameGoods(){
+/////////////////////동일한 상품이 존재하면 안됨.//////////////////////
+	//부모창의 검색어 =>자식창 팝업창에 넣음
+	document.getElementById('trSize').value = opener.$('#custPopup').children().size();//행의 사이즈 개수
+
+	var size = $('#trSize').val();//행의 사이즈 개수
+	console.log(size);
+	debugger;
+	//반복문을 통해 부모창에 있는 상품코드들을 담아서 비교하기위해 히든input창을 만듬.
+	for(var i = 1; i <= size; i++){
+	
+		var custHidden = document.getElementById('custHidden');// tbody 아이디
+		let inputHidden = document.createElement('input');		
+		
+		inputHidden.setAttribute('id', 'hiddenIn'+i);
+		inputHidden.setAttribute('type', 'hidden');
+		inputHidden.setAttribute('value', opener.$('#goodsSearch'+i).val());
+		
+		custHidden.appendChild(inputHidden);
+		console.log(inputHidden);
+	
+	}
+	document.getElementById('checkShop').value = opener.$('#searchStock').val();//검색어
+	document.getElementById('saleNum').value = opener.$('#sale_Code').val();//매장코드
+	
+	var step;
+	for (step = 1; step <= size; step++) {
+		var hiddenInValue = $('#hiddenIn'+step).val();//조회한 상품코드들이 담김
+		console.log(hiddenInValue);
+	
+		//체크한 행의 상품코드와 부모창의 상품코드들과 같은 값이 있을 시 false반환
+		if(goodsCode == hiddenInValue){
+			alert("동일한 상품코드가 존재합니다.");
+			return false;
+		}
+	}
+	
+	//동일한 상품코드가 없을 시 부모창에 값을 넣어준다.
+	$('#goodsSearch'+num, opener.document).val(goodsCode);//상품코드
+	$('#goodsNameIn'+num, opener.document).val(goodsName);//상품명
+	$('#goodsCountIn'+num, opener.document).val(goodsCount);//재고수량
+	$('#pricehidden'+num, opener.document).val(goodsPrice);//소비자가(히든)
+	console.log(num);//몇번째 행에 넣을 지
+	
+	$('#goodsSearch'+num, opener.document).prop('readonly', true);//값이 들어가면 상품코드값은 변경 불가능처리 => readonly속성추가.    
+	
+	window.close();//값을 다 넣어주고 닫는다.
+		
+};

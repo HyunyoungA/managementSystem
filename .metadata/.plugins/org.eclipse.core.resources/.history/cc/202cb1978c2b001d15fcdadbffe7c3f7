@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="memberMapper">
+	<!-- 로그인 -->
+	<select id="login" resultMap="MemberResultSet">
+		select a.USER_ID
+			   , a.USER_NM
+			   , a.USER_DT_CD
+		       , a.USE_YN
+		       , a.USE_PWD
+		       , a.ST_DT
+		       , a.ED_DT
+		       , a.PRT_CD
+		       , a.PWD_UPD_DT
+		       , a.FST_REG_DT
+		       , a.FST_USER_ID
+		       , a.LST_UPD_DT
+		       , a.LST_UPD_ID
+		       , b.PRT_NM
+		from MA_USER_MT a
+		     join MA_PRT_MT b on (a.PRT_CD = b.PRT_CD)
+		where USER_ID=#{userId}
+			  and USE_PWD=#{userPwd}
+			  and USE_YN = 'Y'
+	</select>
+	<resultMap type="Member" id="MemberResultSet">
+		<id column="USER_ID" property="userId"/>
+		<result column="USER_NM" property="userNm"/>
+		<result column="USER_DT_CD" property="userDtCd"/>
+		<result column="USE_YN" property="userYn"/>
+		<result column="USE_PWD" property="userPwd"/>
+		<result column="ST_DT" property="stDt"/>
+		<result column="ED_DT" property="edDt"/>
+		<result column="PRT_CD" property="prtCd"/>
+		<result column="PWD_UPD_DT" property="pwdUpdDt"/>
+		<result column="FST_REG_DT" property="fstRegDt"/>
+		<result column="FST_USER_ID" property="fstUserId"/>
+		<result column="LST_UPD_DT" property="lstUpdDt"/>
+		<result column="LST_UPD_ID" property="lstUpdId"/>
+		<result column="PRT_NM" property="prtNm"/>
+	</resultMap>
+	
+	<resultMap type="Customer" id="CustomerResultSet">
+		<id column="CUST_NO" property="custNo"/>
+		<result column="CUST_NM" property="custNm"/>
+		<result column="MBL_NO" property="mblNo"/>
+		<result column="CUST_SS_CD" property="custSsCd"/>
+		<result column="JS_DT" property="jsDt"/>
+		<result column="PRT_NM" property="prtNm"/>
+		<result column="FST_USER_ID" property="fstUserId"/>
+		<result column="USER_NM" property="userNm"/>
+		<result column="LST_UPD_DT" property="lstUpdDt"/>
+	</resultMap>
+
+	<!-- 리스트 -->
+	<select id="getBoardList" resultMap="CustomerResultSet">
+	<![CDATA[
+		select a.CUST_NO 
+	    , CASE WHEN LENGTH(a.CUST_NM) = '2'
+	           THEN SUBSTR(a.CUST_NM,1,1)
+	           ||LPAD('*',LENGTH(a.CUST_NM)-1, '*')
+	           ELSE SUBSTR(a.CUST_NM,1,1)
+	           ||LPAD('*',LENGTH(a.CUST_NM)-2, '*')
+	           || SUBSTR(a.CUST_NM, LENGTH(a.CUST_NM), 1)
+	           END AS CUST_NM
+	    ,REGEXP_REPLACE(REGEXP_REPLACE(a.MBL_NO, '(.{3})(.*)(.{4})', '\1-\2-\3')
+	    		, '-(.*)-', '-'||LPAD('*',
+	            LENGTH(REGEXP_REPLACE(a.MBL_NO, '(.{3})(.*)(.{4})', '\2')), '*')
+	            ||'-') as MBL_NO
+	    , CASE WHEN a.CUST_SS_CD = '10' THEN '정상'
+	           WHEN a.CUST_SS_CD = '80' THEN '중지'
+	           WHEN a.CUST_SS_CD = '90' THEN '해지'
+	           END CUST_SS_CD
+	    , TO_CHAR(TO_DATE(a.JS_DT, 'YYYYMMDD'), 'YYYY-MM-DD') as JS_DT
+	    , c.PRT_NM
+	    , CONCAT(CONCAT(a.FST_USER_ID, '/'), b.USER_NM) as FST_USER_ID
+	    , TO_CHAR(a.LST_UPD_DT, 'YYYY-MM-DD HH24MISS') as LST_UPD_DT
+	    from CS_CUST01_MT a
+	    join MA_USER_MT b on(a.FST_USER_ID = b.USER_ID)
+	    join MA_PRT_MT c on(a.JN_PRT_CD = c.PRT_CD)
+		order by a.CUST_NO
+		]]>
+	</select>
+	
+	<!-- 매장검색 카운트 -->
+	<select id="getSaleListCount" resultType="_int">
+		select count(DISTINCT PRT_CD)
+		from MA_PRT_MT
+		where (PRT_NM like '%' || #{saleName} || '%'
+		    or PRT_CD like '%' || #{saleName} || '%')
+	</select>
+	<!-- 매장조회 -->
+<!-- 	/* a.PRT_CD : 거래처코드 */ -->
+<!-- 	/* b.PRT_NM : 거래처명 */ -->
+	<select id="saleCodeNum" parameterType="map" resultType="HashMap">
+		select DISTINCT PRT_CD, PRT_NM						
+		from MA_PRT_MT 
+		where PRT_NM like '%' || #{saleName} || '%'
+		   or PRT_CD like '%' || #{saleName} || '%'
+	</select>
+	
+	<!-- 매장조회 팝업창 -->
+<!-- 	/* PRT_CD : 거래처코드 */ -->
+<!-- 	/* PRT_NM : 거래처명 */ -->
+<!-- 	/* PRT_SS_CD : 매장상태 */ -->
+	<select id="saleCheck" parameterType="map" resultType="HashMap">
+		select DISTINCT PRT_CD, PRT_NM
+		       , CASE WHEN PRT_SS_CD = '10' THEN '정상'
+		              WHEN PRT_SS_CD = '80' THEN '중지'
+		              WHEN PRT_SS_CD = '90' THEN '해지'
+		              END AS PRT_SS_CD
+		from MA_PRT_MT
+		where PRT_DT_CD = '2'
+		      and (PRT_NM like '%' || #{saleName} || '%'
+		      or PRT_CD like '%' || #{saleName} || '%')
+	</select>
+		<!-- 매장조회 팝업창-검색 -->
+<!-- 	/* PRT_CD : 거래처코드 */ -->
+<!-- 	/* PRT_NM : 거래처명 */ -->
+<!-- 	/* PRT_SS_CD : 매장상태 */ -->
+	<select id="checkShopMap" parameterType="map" resultType="HashMap">
+		select DISTINCT PRT_CD, PRT_NM
+		       , CASE WHEN PRT_SS_CD = '10' THEN '정상'
+		              WHEN PRT_SS_CD = '80' THEN '중지'
+		              WHEN PRT_SS_CD = '90' THEN '해지'
+		              END AS PRT_SS_CD
+		from MA_PRT_MT
+		where PRT_DT_CD = '2'
+		      and (PRT_NM like '%' || #{checkShop} || '%'
+		      or PRT_CD like '%' || #{checkShop} || '%')
+	</select>
+	<!-- 매장조회 팝업창-적용버튼 -->
+	<select id="popUpsumit" parameterType="map" resultType="HashMap">
+		select DISTINCT PRT_CD, PRT_NM						
+		from MA_PRT_MT 
+		where PRT_NM like '%' || #{popUpsumit} || '%'
+			or PRT_CD like '%' || #{popUpsumit}|| '%'
+	</select>
+	
+	<!-- 고객번호 카운트 -->
+	<!-- CUST_NO:고객번호, CUST_NM:고객명 -->
+	<select id="custNumListCount" resultType="_int">
+		select count(DISTINCT CUST_NO)
+		from CS_CUST01_MT
+		where CUST_NO like '%' || #{custNumble} || '%'
+		  OR CUST_NM like '%' || #{custNumble} || '%'
+	</select>
+	
+	<!-- 고객번호 리스트 -->
+    <!-- CUST_NO:고객번호, CUST_NM:고객명 -->
+	<select id="custNumList" parameterType="map" resultType="HashMap">
+		select DISTINCT CUST_NO, CUST_NM
+		from CS_CUST01_MT
+		where CUST_NO like '%' || #{custNumble} || '%'
+		   OR CUST_NM like '%' || #{custNumble} || '%'
+	</select>
+	
+		<!-- 고객조회 팝업창 -->
+<!-- 	/* CUST_NO : 고객번호 */ -->
+<!-- 	/* CUST_NM : 고객명 */ -->
+<!-- 	/* MBL_NO : 휴대폰번호 */ -->
+<!-- 	/* CS_CUST01_MT : 고객상태 */ -->
+	<select id="custNumble" parameterType="map" resultType="HashMap">
+		select CUST_NO, CUST_NM
+		      , REGEXP_REPLACE(MBL_NO, '(.{3})(.+)(.{4})', '\1-\2-\3') MBL_NO 
+		      , CASE WHEN CUST_SS_CD = '10' THEN '정상'
+		           WHEN CUST_SS_CD = '80' THEN '중지'
+		           WHEN CUST_SS_CD = '90' THEN '해지'
+		           END AS CUST_SS_CD
+		from CS_CUST01_MT
+		where CUST_NO like '%' || #{custNumble} || '%'
+		   OR CUST_NM like '%' || #{custNumble} || '%'
+	</select>
+	
+	<!-- 고객조회 팝업창-검색 -->
+<!-- 	/* CUST_NO : 고객번호 */ -->
+<!-- 	/* CUST_NM : 고객명 */ -->
+<!-- 	/* MBL_NO : 휴대폰번호 */ -->
+<!-- 	/* CS_CUST01_MT : 고객상태 */ -->
+	<select id="checkCustList" parameterType="map" resultType="HashMap">
+		select CUST_NO, CUST_NM
+		      , REGEXP_REPLACE(MBL_NO, '(.{3})(.+)(.{4})', '\1-\2-\3') MBL_NO 
+		      , CASE WHEN CUST_SS_CD = '10' THEN '정상'
+		           WHEN CUST_SS_CD = '80' THEN '중지'
+		           WHEN CUST_SS_CD = '90' THEN '해지'
+		           END AS CUST_SS_CD
+		from CS_CUST01_MT
+		where CUST_NM like '%' || #{checkCustName} || '%'
+          and MBL_NO IN #{checkCustPhone} 
+	</select>
+	
+	<!-- 고객조회 팝업창-적용버튼 -->
+<!-- 	CUST_NO:고객번호 , CUST_NM:고객명	 -->
+	<select id="custPopUpsumit" parameterType="map" resultType="HashMap">
+		select DISTINCT CUST_NO, CUST_NM					
+		from CS_CUST01_MT 
+		where CUST_NO IN #{custSumit}
+	</select>
+	
+	<!-- 전체검색조회 리스트 -->
+	<select id="totale" parameterType="map" resultType="HashMap">
+		select a.CUST_NO as CUST_NO
+	    , CASE WHEN LENGTH(a.CUST_NM) = '2'
+	           THEN SUBSTR(a.CUST_NM,1,1)
+	           ||LPAD('*',LENGTH(a.CUST_NM)-1, '*')
+	           ELSE SUBSTR(a.CUST_NM,1,1)
+	           ||LPAD('*',LENGTH(a.CUST_NM)-2, '*')
+	           || SUBSTR(a.CUST_NM, LENGTH(a.CUST_NM), 1)
+	           END AS CUST_NM
+	    ,REGEXP_REPLACE(REGEXP_REPLACE(a.MBL_NO, '(.{3})(.*)(.{4})', '\1-\2-\3')
+	    		, '-(.*)-', '-'||LPAD('*',
+	            LENGTH(REGEXP_REPLACE(a.MBL_NO, '(.{3})(.*)(.{4})', '\2')), '*')
+	            ||'-') as MBL_NO
+	    , CASE WHEN a.CUST_SS_CD = '10' THEN '정상'
+	           WHEN a.CUST_SS_CD = '80' THEN '중지'
+	           WHEN a.CUST_SS_CD = '90' THEN '해지'
+	           END CUST_SS_CD
+	    , TO_CHAR(TO_DATE(a.JS_DT, 'YYYYMMDD'), 'YYYY-MM-DD') as JS_DT
+	    , c.PRT_NM
+	    , CONCAT(CONCAT(a.FST_USER_ID, '/'), b.USER_NM) as FST_USER_ID
+	    , TO_CHAR(a.LST_UPD_DT, 'YYYY-MM-DD HH24MISS') as LST_UPD_DT
+	    from CS_CUST01_MT a
+	    join MA_USER_MT b on(a.FST_USER_ID = b.USER_ID)
+	    join MA_PRT_MT c on(a.JN_PRT_CD = c.PRT_CD)
+        where <!-- 			가입일자가 시작일자와 종료일자 --> 
+        	(TO_DATE(a.JS_DT, 'YYYY-MM-DD')<![CDATA[>=]]> TO_DATE(#{preDate}, 'YYYY-MM-DD')   
+	         		 AND    
+	         		 TO_DATE(a.JS_DT, 'YYYY-MM-DD')<![CDATA[<=]]>TO_DATE(#{curDate}, 'YYYY-MM-DD'))
+<!--        고객상태 : 정상/중지/해지 경우  넘겨준다 -->
+<!--        고객상태 : 전체선택 경우 100을 넘겨준다 -->
+			<if test='custState != null'>
+				<if test='custState != 100'>
+					AND CUST_SS_CD in #{custState}
+				</if>
+			</if>
+<!--         고객번호가 null이 아닌 경우 -->
+        	<if test='custNum != ""'>
+        		and a.CUST_NO like '%' || #{custNum} || '%'
+        	</if>
+<!--         매장명이 null이 아닌인경우 -->
+        	<if test='saleName != ""'>
+        		and c.PRT_NM like '%' || #{saleName} || '%'
+        	</if>
+		order by CUST_NO ASC
+	</select>
+	
+		<!-- 고객변경이력 팝업창 -->
+<!-- 	CUST_NO::고객번호, CUST_NM:고객명, b.CHG_SEQ:변경일련번호, CHG_DT:변경일자, 
+		CHG_CD(변경코드)변경항목, CHG_BF_CNT:변경전, CHG_AFT_CNT:변경후,  -->
+<!--    LST_UPD_ID:수정자(최종수정자), LST_UPD_DT:수정일시(최종수정일자) -->
+	<select id="changeCust" parameterType="map" resultType="HashMap">
+	select DISTINCT a.CUST_NO
+	       , a.CUST_NM
+	       , b.CHG_SEQ
+	       , a.CUST_NM
+	       , TO_CHAR((TO_DATE(b.CHG_DT)), 'YYYY-MM-DD') as CHG_DT
+<!-- 	       변경항목 -->
+	       , CASE b.CHG_CD WHEN 'CUST_NM' THEN '고객명'
+	                         WHEN 'SEX_CD' THEN '성별'
+	                         WHEN 'SCAL_YN' THEN '양음력구분'
+	                         WHEN 'BRDY_DT' THEN '생년월일'
+	                         WHEN 'MRRG_DT' THEN '결혼기념일'
+	                         WHEN 'MBL_NO' THEN '휴대폰번호'
+	                         WHEN 'PSMT_GRC_CD' THEN '우편물수령코드'
+	                         WHEN 'EMAIL' THEN '이메일주소'
+	                         WHEN 'ZIP_CD' THEN '우편번호코드'
+	                         WHEN 'ADDR' THEN '주소'
+	                         WHEN 'ADDR_DTL' THEN '상세주소'
+	                         WHEN 'CUST_SS_CD' THEN '고객상태'
+	                         WHEN 'CNCL_CNTS' THEN '해지사유내용'
+	                         WHEN 'JN_PRT_CD' THEN '가입매장코드'
+	                         WHEN 'STP_DT' THEN '중지일자'
+	                         WHEN 'CNCL_DT' THEN '해지일자'
+	                         WHEN 'EMAIL_RCV_YN' THEN '이메일수신동의여부'
+	                         WHEN 'SMS_RCV_YN' THEN 'SMS수신동의여부'
+	                         WHEN 'TM_RCV_YN' THEN 'TM수신동의여부'
+	                         WHEN 'DM_RCV_YN' THEN 'DM수신동의여부'
+	                         WHEN 'POC_CD' THEN '직업'
+	                         END CHG_CD
+<!-- 	        변경전 -->
+	       , CASE WHEN B.CHG_BF_CNT = '10' AND B.CHG_CD ='POC_CD' THEN '학생'   				
+	                WHEN B.CHG_BF_CNT = '20' AND B.CHG_CD ='POC_CD' THEN '회사원'					
+	                WHEN B.CHG_BF_CNT = '30' AND B.CHG_CD ='POC_CD' THEN '공무원'					
+	                WHEN B.CHG_BF_CNT = '40' AND B.CHG_CD ='POC_CD' THEN '전문직'					
+	                WHEN B.CHG_BF_CNT = '50' AND B.CHG_CD ='POC_CD' THEN '군인'					
+	                WHEN B.CHG_BF_CNT = '60' AND B.CHG_CD ='POC_CD' THEN '주부'					
+	                WHEN B.CHG_BF_CNT = '90' AND B.CHG_CD ='POC_CD' THEN '연예인'
+	                WHEN B.CHG_BF_CNT = '99' AND B.CHG_CD ='POC_CD' THEN '기타'
+	                
+	                WHEN B.CHG_BF_CNT = 'H' AND B.CHG_CD ='PSMT_GRC_CD' THEN '자택'				
+	                WHEN B.CHG_BF_CNT = 'O' AND B.CHG_CD ='PSMT_GRC_CD' THEN '직장'				
+	                
+	                WHEN B.CHG_BF_CNT = '10' AND B.CHG_CD ='CUST_SS_CD' THEN '정상'				
+	                WHEN B.CHG_BF_CNT = '80' AND B.CHG_CD ='CUST_SS_CD' THEN '중지'				
+	                WHEN B.CHG_BF_CNT = '90' AND B.CHG_CD ='CUST_SS_CD' THEN '해지'
+	                
+	                WHEN B.CHG_BF_CNT = 'M' AND B.CHG_CD ='SEX_CD' THEN '남자'					
+	                WHEN B.CHG_BF_CNT = 'F' AND B.CHG_CD ='SEX_CD' THEN '여자'					
+	                
+	                WHEN B.CHG_BF_CNT = '0' AND B.CHG_CD ='SCAL_YN' THEN '양력'					
+	                WHEN B.CHG_BF_CNT = '1' AND B.CHG_CD ='SCAL_YN' THEN '음력'					
+	                
+	                WHEN B.CHG_BF_CNT = 'Y' AND B.CHG_CD ='EMAIL_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_BF_CNT = 'N' AND B.CHG_CD ='EMAIL_RCV_YN' THEN '미동의'			
+	                
+	                WHEN B.CHG_BF_CNT = 'Y' AND B.CHG_CD ='DM_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_BF_CNT = 'N' AND B.CHG_CD ='DM_RCV_YN' THEN '미동의'				
+	                
+	                WHEN B.CHG_BF_CNT = 'Y' AND B.CHG_CD ='SMS_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_BF_CNT = 'N' AND B.CHG_CD ='SMS_RCV_YN' THEN '미동의'				
+	                
+	                WHEN B.CHG_BF_CNT = 'Y' AND B.CHG_CD ='TM_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_BF_CNT = 'N' AND B.CHG_CD ='TM_RCV_YN' THEN '미동의'				
+	                
+	                WHEN NOT REGEXP_LIKE(B.CHG_BF_CNT, '[^0-9]') AND LENGTH(B.CHG_BF_CNT) = 8	
+	                THEN TO_CHAR(TO_DATE(B.CHG_BF_CNT), 'YYYY-MM-DD')		
+	                					
+<!-- 	                /* 변경전 내용이 핸드폰번호(중간번호 3자리) 라면 */ -->
+	                WHEN NOT REGEXP_LIKE(B.CHG_BF_CNT, '[^0-9]') AND LENGTH(B.CHG_BF_CNT) = 10
+<!-- 	                /* 000-000-0000 으로 변환 */ -->
+	                THEN SUBSTR(B.CHG_BF_CNT,1,3) || '-' || SUBSTR(B.CHG_BF_CNT,4,3) || '-' || SUBSTR(B.CHG_BF_CNT,7) 
+	                
+<!-- 	                /* 변경전 내용이 핸드폰번호(중간번호 4자리) 라면 */ -->
+	                WHEN NOT REGEXP_LIKE(B.CHG_BF_CNT, '[^0-9]') AND LENGTH(B.CHG_BF_CNT) = 11	
+	                THEN SUBSTR(B.CHG_BF_CNT,1,3) || '-' || SUBSTR(B.CHG_BF_CNT,4,4) || '-' || SUBSTR(B.CHG_BF_CNT,8) 
+	                
+<!-- 	                /* NULL이면 '-' 출력 */ -->
+	                ELSE NVL(B.CHG_BF_CNT, '-') 												
+	                END AS CHG_BF_CNT         
+	                                            					
+<!-- 	         변경후 -->
+	         , CASE WHEN B.CHG_AFT_CNT = '10' AND B.CHG_CD ='POC_CD' THEN '학생'   				
+	                WHEN B.CHG_AFT_CNT = '20' AND B.CHG_CD ='POC_CD' THEN '회사원'					
+	                WHEN B.CHG_AFT_CNT = '30' AND B.CHG_CD ='POC_CD' THEN '공무원'				
+	                WHEN B.CHG_AFT_CNT = '40' AND B.CHG_CD ='POC_CD' THEN '전문직'			
+	                WHEN B.CHG_AFT_CNT = '50' AND B.CHG_CD ='POC_CD' THEN '군인'					
+	                WHEN B.CHG_AFT_CNT = '60' AND B.CHG_CD ='POC_CD' THEN '주부'					
+	                WHEN B.CHG_AFT_CNT = '90' AND B.CHG_CD ='POC_CD' THEN '연예인'
+	                WHEN B.CHG_AFT_CNT = '99' AND B.CHG_CD ='POC_CD' THEN '기타'
+	                
+	                WHEN B.CHG_AFT_CNT = 'H' AND B.CHG_CD ='PSMT_GRC_CD' THEN '자택'				
+	                WHEN B.CHG_AFT_CNT = 'O' AND B.CHG_CD ='PSMT_GRC_CD' THEN '직장'				
+	                
+	                WHEN B.CHG_AFT_CNT = '10' AND B.CHG_CD ='CUST_SS_CD' THEN '정상'				
+	                WHEN B.CHG_AFT_CNT = '80' AND B.CHG_CD ='CUST_SS_CD' THEN '중지'				
+	                WHEN B.CHG_AFT_CNT = '90' AND B.CHG_CD ='CUST_SS_CD' THEN '해지'
+	                
+	                WHEN B.CHG_AFT_CNT = 'M' AND B.CHG_CD ='SEX_CD' THEN '남자'					
+	                WHEN B.CHG_AFT_CNT = 'F' AND B.CHG_CD ='SEX_CD' THEN '여자'					
+	                
+	                WHEN B.CHG_AFT_CNT = '0' AND B.CHG_CD ='SCAL_YN' THEN '양력'					
+	                WHEN B.CHG_AFT_CNT = '1' AND B.CHG_CD ='SCAL_YN' THEN '음력'					
+	                
+	                WHEN B.CHG_AFT_CNT = 'Y' AND B.CHG_CD ='EMAIL_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_AFT_CNT = 'N' AND B.CHG_CD ='EMAIL_RCV_YN' THEN '미동의'			
+	                
+	                WHEN B.CHG_AFT_CNT = 'Y' AND B.CHG_CD ='DM_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_AFT_CNT = 'N' AND B.CHG_CD ='DM_RCV_YN' THEN '미동의'				
+	                
+	                WHEN B.CHG_AFT_CNT = 'Y' AND B.CHG_CD ='SMS_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_AFT_CNT = 'N' AND B.CHG_CD ='SMS_RCV_YN' THEN '미동의'				
+	                
+	                WHEN B.CHG_AFT_CNT = 'Y' AND B.CHG_CD ='TM_RCV_YN' THEN '동의'				
+	                WHEN B.CHG_AFT_CNT = 'N' AND B.CHG_CD ='TM_RCV_YN' THEN '미동의'				
+	                
+<!-- 	                /* 변경후 내용이 날짜라면(8자리로 이루어진 숫자) */ -->
+	                WHEN NOT REGEXP_LIKE(B.CHG_AFT_CNT, '[^0-9]') AND LENGTH(B.CHG_AFT_CNT) = 8	
+	                THEN TO_CHAR(TO_DATE(B.CHG_AFT_CNT), 'YYYY-MM-DD')						
+<!-- 	                /* 변경후 내용이 핸드폰번호(중간번호 3자리) 라면 */ -->
+	                WHEN NOT REGEXP_LIKE(B.CHG_AFT_CNT, '[^0-9]') AND LENGTH(B.CHG_AFT_CNT) = 10	
+<!-- 	                /* 000-000-0000 으로 변환 */ -->
+	                THEN SUBSTR(B.CHG_AFT_CNT,1,3) || '-' || SUBSTR(B.CHG_AFT_CNT,4,3) || '-' || SUBSTR(B.CHG_AFT_CNT,7) 
+<!-- 	                /* 변경후 내용이 핸드폰번호(중간번호 4자리) 라면 */ -->
+	                WHEN NOT REGEXP_LIKE(B.CHG_AFT_CNT, '[^0-9]') AND LENGTH(B.CHG_AFT_CNT) = 11	
+<!-- 	                /* 000-0000-0000 으로 변환 */ -->
+	                THEN SUBSTR(B.CHG_AFT_CNT,1,3) || '-' || SUBSTR(B.CHG_AFT_CNT,4,4) || '-' || SUBSTR(B.CHG_AFT_CNT,8) 
+	       ELSE NVL(B.CHG_AFT_CNT, '-') 
+	       END AS CHG_AFT_CNT
+	       , CONCAT(CONCAT(a.LST_UPD_ID, '/'), c.USER_NM) as LST_UPD_ID
+	       , TO_CHAR(a.LST_UPD_DT, 'YYYY-MM-DD HH24MISS') as LST_UPD_DT
+	from CS_CUST01_MT a
+	    jOin SD_CUST01_HT b on(a.CUST_NO = b.CUST_NO)
+		    join MA_USER_MT c on(a.FST_USER_ID = c.USER_ID)
+	where a.CUST_NO in #{changeThis}
+	ORDER BY CHG_DT DESC
+	</select>
+	
+<!-- 	매장월별식별조회 페이지 이동 -->
+<!-- PRT_CD: 거래처코드, PRT_NM: 거래처명-->
+	<select id="saleMonth" resultMap="MemberResultSet">
+		select B.PRT_CD, B.PRT_NM, A.USER_DT_CD
+		from MA_USER_MT A
+		    JOIN MA_PRT_MT B ON(A.PRT_CD=B.PRT_CD)
+		WHERE USER_ID IN #{userId}
+	</select>
+	
+	<!-- 전체검색조회 리스트 -->
+	<select id="MonthTotale" parameterType="map" resultType="HashMap">
+		SELECT A.PRT_CD
+	     , (SELECT PRT_NM FROM MA_PRT_MT WHERE PRT_CD = A.PRT_CD) AS PRT_NM
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '01' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY1
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '02' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY2
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '03' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY3
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '04' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY4
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '05' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY5
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '06' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY6
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '07' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY7
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '08' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY8
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '09' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY9
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '10' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY10
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '11' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY11
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '12' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY12
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '13' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY13
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '14' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY14
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '15' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY15
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '16' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY16
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '17' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY17
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '18' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY18
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '19' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY19
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '20' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY20
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '21' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY21
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '22' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY22
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '23' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY23
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '24' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY24
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '25' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY25
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '26' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY26
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '27' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY27
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '28' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY28
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '29' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY29
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '30' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY30
+	     , SUM(CASE WHEN SUBSTR(A.SAL_DT, 7, 8) = '31' THEN DECODE(A.SAL_TP_CD, 'SAL', b.SAL_QTY, B.SAL_QTY*-1)ELSE 0 END)AS DAY31
+	     , SUM(CASE WHEN A.SAL_TP_CD = 'SAL' THEN B.SAL_QTY ELSE B.SAL_QTY*-1 END) AS TOT_SAL_QTY
+	FROM CS_SAL01_MT A
+	JOIN CS_SAL01_DT B ON(A.PRT_CD = B.PRT_CD)
+	                 AND (A.SAL_DT = B.SAL_DT)
+	                 AND (A.SAL_NO = B.SAL_NO)
+	WHERE TO_CHAR(TO_DATE(A.SAL_DT), 'YYYY-MM-DD') LIKE '2022-06' || '%'
+	AND A.PRT_CD = #{saleMonth}
+	GROUP BY ROLLUP (A.PRT_CD)
+	</select>
+	
+	
+	
+</mapper>
